@@ -317,7 +317,7 @@ function main() {
     INVALID_PATHS=()
 
     if hasFlag "m"; then
-        log "- MULTIPLE"
+        log "- COMMAND LINE"
         for path in $(getFlag "m" | tr ',' ' '); do
             path=$(parse_date "$path")
             source_path=$(echo "$path" | cut -d ':' -f 1)
@@ -355,7 +355,7 @@ function main() {
 
     log "Starting upload..."
     for path in "${PATHS_TO_UPLOAD[@]}"; do
-        REMOTE_DESTINATION="$(getFlag "to")"
+        REMOTE_DESTINATION="$(getFlag "to")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
         CUSTOM_DESTINATION="$(echo "$path" | awk -F ':' '{print ($2 != "") ? $2 : ""}')"
         FINAL_DESTINATION="$REMOTE_DESTINATION$CUSTOM_DESTINATION"
         SOURCE_PATH="$(echo "$path" | cut -d ':' -f 1)"
@@ -364,11 +364,11 @@ function main() {
             FINAL_DESTINATION="$FINAL_DESTINATION/$(basename "$SOURCE_PATH")"
         fi
 
-        # echo "              PATH : $path"
-        # echo "REMOTE DESTINATION : $REMOTE_DESTINATION"
-        # echo "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
-        # echo "       SOURCE_PATH : (what?) : $SOURCE_PATH"
-        # echo " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
+        echo "              PATH : $path"
+        echo "REMOTE DESTINATION : $REMOTE_DESTINATION"
+        echo "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
+        echo "       SOURCE_PATH : (what?) : $SOURCE_PATH"
+        echo " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
 
         # TEST_PATH="$(echo "$path" | cut -d ':' -f 1)"
         # CUSTOM_DESTINATION="$(echo "$path" | cut -d ':' -f 2)/$(basename "$TEST_PATH")"
