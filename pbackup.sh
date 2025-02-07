@@ -330,7 +330,7 @@ function main() {
         done
     fi
 
-    if hasFlag "f"; then
+    if hasFlag "cf"; then
         log "- CONFIGURATION FILE"
         for path in $(cat $(getFlag "cf")); do
             path=$(parse_date "$path")
