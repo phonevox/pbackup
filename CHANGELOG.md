@@ -1,3 +1,13 @@
+## [0.2.1](https://github.com/phonevox/pbackup/compare/v0.2.0...v0.2.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* defaults remotes to :/ if only name is present ([d83ec48](https://github.com/phonevox/pbackup/commit/d83ec48bcd7934c7c993174befcc0c5526731caa))
+* dont stop application on invalid path ([081fd8a](https://github.com/phonevox/pbackup/commit/081fd8acc3f7b3c3a937adb4307aece3de242e3e))
+
+
+
 # [0.2.0](https://github.com/phonevox/pbackup/compare/v0.1.0...v0.2.0) (2025-02-07)
 
 
