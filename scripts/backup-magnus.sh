@@ -69,8 +69,21 @@ function main () {
     validations $@
 
     # generate database dump
-    # upload to pbackup
+    log "Dumping database..."
+    EXPECTED_DUMP_LOCATION="$CURRDIR/mbilling.sql"
+    # @NOTE(Adrian) : There is something about skipping specific tables that is not working. Check it out later
+    mysql -uroot -p$(cat /root/passwordMysql.log) mbilling > $EXPECTED_DUMP_LOCATION 
+
+    # @TODO(Adrian) : get other files to upload (recordings, asterisk files, sound files)
+    # @TODO(Adrian) : upload to pbackup
+
     # clean database dump
+    if [ -f $EXPECTED_DUMP_LOCATION ]; then
+        log "CLEAN UP : Cleaning up database dump..."
+        rm -f $EXPECTED_DUMP_LOCATION
+    else
+        log "CLEAN UP : Database dump not found, we won't delete anything. Searched location: \"$EXPECTED_DUMP_LOCATION\""
+    fi
 }
 
 main "$@"
