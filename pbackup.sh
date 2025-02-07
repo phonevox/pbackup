@@ -78,7 +78,7 @@ log () {
         echo -e "[$CURRTIME] $SCRIPT_NAME> $1"
     fi
 }
-log "=== STARTING - ARGUMENTS: $@ ===" muted
+log "=== STARTING - ARGUMENTS: $* ===" muted
 
 # "safe-run", abstraction to "run" function, so it can work with our dry mode
 # Usage: same as run

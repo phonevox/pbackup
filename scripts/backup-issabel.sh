@@ -47,7 +47,7 @@ function log () {
     fi
 }
 
-log "=== STARTING - ARGUMENTS: $@" muted
+log "=== STARTING - ARGUMENTS: $*" muted
 
 function generate_backup_file() {
     log "Checking for issabel-helper to handle backup generation..."

@@ -9,23 +9,11 @@ SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
 LOG_FILE_PATH="$CURRDIR"
-LOG_FILE_NAME="issabel-backup"
+LOG_FILE_NAME="magnus-backup"
 LOG_FILE="$LOG_FILE_PATH/$LOG_FILE_NAME-$(date '+%Y-%m-%d').log"
 
-# Issabel Backup
-BACKUP_DIR="/var/www/backup" # Padrão
-BACKUP_FILE="issabelbackup-$(date +%Y%m%d%H%M%S)-06.tar" # Não mude isso. É necessário pra poder upar o backup depois.
-
-# idiotice a baixo @Adrian K.
-_BACKUP_FILE_LOCAL="$BACKUP_DIR/$BACKUP_FILE" # onde está o arquivo de backup que vamos upar
-_RECORDINGS_LOCAL="/var/spool/asterisk/monitor/%YEAR-1d%/%MONTH-1d%/%DAY-1d%" # onde está as gravações que vamos upar
-_BACKUP_FILE_REMOTE=":/configuration" # pra onde o backup vai, no remote? ('SOMADO' AO $1)
-_RECORDINGS_REMOTE=":/recordings/%YEAR-1d%/%MONTH-1d%" # pra onde as gravações vão, no remote? ('SOMADO' AO $1)
-__BACKUP_FILE="$_BACKUP_FILE_LOCAL$_BACKUP_FILE_REMOTE"
-__RECORDINGS="$_RECORDINGS_LOCAL$_RECORDINGS_REMOTE"
-# fim da idiotice
-
-FILES="$__BACKUP_FILE,$__RECORDINGS"
+# Magnus Backup
+FILES=""
 
 # === FUNCS ===
 
@@ -47,11 +35,17 @@ function log () {
     fi
 }
 
-log "=== STARTING - ARGUMENTS: $@" muted
+log "=== STARTING - ARGUMENTS: $*" muted
 
 # === RUNTIME ===
 
-function main () {
+function validations () {
+    echo "Validation arguments:"
+    for i in "$@"; do
+        echo "Argument: $i"
+    done
+
+    DESTINATION="$1"
 
     # if not first argument, quit 
     log "Checking for required arguments..."
@@ -59,7 +53,6 @@ function main () {
         log "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
         exit 1
     fi
-    DESTINATION="$1"
 
     # test if usr/sbin/pbackup exists
     log "Checking if pbackup is installed..."
@@ -75,21 +68,10 @@ function main () {
         log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
     fi
+}
 
-    generate_backup_file
-
-    log "Uploading through pbackup..."
-    pbackup --files "$FILES" --to "$DESTINATION"
-
-    log "Cleaning backupfile from local machine..."
-    
-    if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-        rm -f "$BACKUP_DIR/$BACKUP_FILE"
-    else
-        log "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
-    fi
-
-    log "All done!"
+function main () {
+    validations $@
 }
 
 main "$@"
