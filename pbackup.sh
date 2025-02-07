@@ -29,26 +29,23 @@ source "$CURRDIR/lib/uzful.sh"
 
 # General flags
 add_flag "d" "dry" "Do NOT make changes to the system" bool
-add_flag "t" "test" "Test mode" bool
 # Script flags
-add_flag "f" "from" "Source/local path (for configuration file)" string
-add_flag "m" "multiple" "Source/local paths, separated by comma (for multiple files/folders) i.e. -m './test.txt,./etc/test.txt'" string
-add_flag "to:HIDDEN" "to" "Remote path. Should be formatted as '{REMOTE_NAME}:{PATH}' (just like rclone)" string
-add_flag "config:HIDDEN" "config" "Calls rclone config. Alias command" bool
-add_flag "list:HIDDEN" "list" "List rclone remotes. Alias command" bool
-add_flag "install" "install" "Install this script to your path, so you can call it from anywhere with '$(echo $SCRIPT_NAME | cut -d '.' -f 1) <flags>'" bool
+add_flag "cf" "conf-file" "Path to a file containing multiple paths to upload. One path per line.\n- The paths can be formatted as \"<local>[:<remote>]\". If '-t|--to' destination is provided, \"[:<remote>]\" will be suffixed to the \"-t|--to\" flag's value.\n- Example: -t \"mega:/folder\" on \"./hello.txt:/test\" will be saved to \"mega:/folder/test/hello.txt\"" string
+add_flag "f" "files" "Path(s) to file(s) or folder(s) to be uploaded to remote. Separate multiple files by comma (,)\n- The paths can be formatted as \"<local>[:<remote>]\". If '-t|--to' destination is provided, \"[:<remote>]\" will be suffixed to the \"-t|--to\" flag's value.\n- Example: -t \"mega:/folder\" on \"./cheese.txt:/test\" will be saved to \"mega:/folder/test/cheese.txt\"" string
+add_flag "t" "to" "rclone's remote name. Optionally can also set to where, on the remote, your files will be moved to.\n- Example: -t|--to \"<remote_name>[:<path>]\"" string
+add_flag "config:HIDDEN" "config" "Alias for \"rclone config\"" bool
+add_flag "list:HIDDEN" "list" "Alias for \"rclone listremotes\"" bool
+add_flag "install:HIDDEN" "install" "Install this script to your path, so you can call it from anywhere with '$(echo $SCRIPT_NAME | cut -d '.' -f 1) <flags>'" bool
 
-add_flag "y" "yesterday" "yesterday (single day) 1" bool
-add_flag "da" "days-ago" "days ago (single day)" string
+add_flag "y:HIDDEN" "yesterday" "Alias for \"--days-ago 1\"" bool
+add_flag "da" "days-ago" "If there is any %YEAR%, %MONTH% or %DAY% variables in paths, how many days to subtract from them. Defaults to 0\n- Do note that if you use %DAY-<n>d% together with \"--days-ago <x>\", the amount subtracted will be summed (in this case, %DAY-<n+x>d%).\n- If n and x were both 1, this would result in 2 days ago result for %DAY% conversion." string
 
 add_flag "v" "version" "Show app version and exit" bool
 add_flag "upd:HIDDEN" "update" "Update this script to the newest version" bool
 add_flag "fu:HIDDEN" "force-update" "Force the update even if its in the same version" bool
-
-add_flag "test" "test-fake" "fake flag" bool # test flag for showcase, ignore
 # === GENERATING ===
-set_description "Phonevox's rclone abstraction for backups on cloud remotes.\nYou need to configure remotes on rclone manually (through 'rclone config')"
-set_usage "sudo bash $FULL_SCRIPT_PATH --from \"<local_paths_file>\" --to \"<remote_name>:<remote_path>\"\nEXAMPLES\nsudo bash $FULL_SCRIPT_PATH --from \"./file_with_paths.txt\" --to \"mega:/\"\nsudo bash $FULL_SCRIPT_PATH --multiple \"/path/one.txt,/path/two.conf,/path\" --to \"mega:/\""
+set_description "Phonevox's rclone abstraction for backups on cloud remotes.\nYou need to configure remotes on rclone manually (through 'rclone config').\nWhen defining paths, you can use the following variables:\n- %YEAR%: The current year\n- %MONTH%: The current month\n- %DAY%: The current day\n- %YEAR-<n>d%: The year n days ago\n- %MONTH-<n>d%: The month n days ago\n- %DAY-<n>d%: The day n days ago"
+set_usage "sudo bash $FULL_SCRIPT_PATH --files \"<path_one[:<remote_p1>]>[,<path_two[:<remote_p2>]>]\" --to \"<remote_name>[:<remote_path>]\""
 parse_flags $@
 
 
@@ -304,7 +301,7 @@ function main() {
     fi
 
     # check remote exists
-    REMOTE="$(getFlag "to" | cut -d ':' -f 1)"
+    REMOTE="$(getFlag "t" | cut -d ':' -f 1)"
     log "Checking rclone remote '$REMOTE'..."
     if ! $(rclone listremotes | grep -q "^$REMOTE:$"); then
         log "ERROR: Remote '$REMOTE' does not exist. Please configure it on rclone manually (through 'rclone config')"
@@ -318,9 +315,9 @@ function main() {
     PATHS_TO_UPLOAD=()
     INVALID_PATHS=()
 
-    if hasFlag "m"; then
+    if hasFlag "f"; then
         log "- COMMAND LINE"
-        for path in $(getFlag "m" | tr ',' ' '); do
+        for path in $(getFlag "f" | tr ',' ' '); do
             path=$(parse_date "$path")
             source_path=$(echo "$path" | cut -d ':' -f 1)
             if ! $(test -e "$source_path"); then
@@ -335,7 +332,7 @@ function main() {
 
     if hasFlag "f"; then
         log "- CONFIGURATION FILE"
-        for path in $(cat $(getFlag "f")); do
+        for path in $(cat $(getFlag "cf")); do
             path=$(parse_date "$path")
             source_path=$(echo "$path" | cut -d ':' -f 1)
             if ! $(test -e "$source_path"); then
@@ -357,7 +354,7 @@ function main() {
 
     log "Starting upload..."
     for path in "${PATHS_TO_UPLOAD[@]}"; do
-        REMOTE_DESTINATION="$(getFlag "to")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
+        REMOTE_DESTINATION="$(getFlag "t")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
         CUSTOM_DESTINATION="$(echo "$path" | awk -F ':' '{print ($2 != "") ? $2 : ""}')"
         FINAL_DESTINATION="$REMOTE_DESTINATION$CUSTOM_DESTINATION"
         SOURCE_PATH="$(echo "$path" | cut -d ':' -f 1)"
@@ -381,7 +378,7 @@ function main() {
 
         # path=$TEST_PATH
         # echo "                PATH : $path"
-        # echo "ORIGINAL REMOTE DEST : $(getFlag "to")"
+        # echo "ORIGINAL REMOTE DEST : $(getFlag "t")"
         # echo "         CUSTOM DEST : $CUSTOM_DESTINATION"
         # echo "         REMOTE DEST : $REMOTE_DESTINATION"
 

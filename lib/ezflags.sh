@@ -228,9 +228,9 @@ print_usage() {
     echo "  $(echo $_SCRIPT_USAGE | sed 's/\\n/\\n  /g' | echo -e "$(cat -)")"
 
     if  [[ -n "$_USAGE_DESCRIPTION" ]]; then
-    echo ""
-    echo "Description:"
-    echo "  $(echo $_USAGE_DESCRIPTION | sed 's/\\n/\\n  /g' | echo -e "$(cat -)")"
+        echo ""
+        echo "Description:"
+        echo "  $(echo $_USAGE_DESCRIPTION | sed 's/\\n/\\n  /g' | echo -e "$(cat -)")"
     fi
     echo ""
     echo "Flags:"
@@ -273,14 +273,26 @@ print_usage() {
 
     # CONSTRUINDO O DISPLAY, ALINHADO COM PRINTF
     for short_flag in $(get_ordered_flags); do
-        # Retrieves pre-formatted display from _FLAG_DISPLAY_TEMP
         local flag_display="${_FLAG_DISPLAY_TEMP[$short_flag]}"
         local description="${FLAG_DESCRIPTIONS["$short_flag"]}"
 
-        # Uses printf to align the description
-        printf "%-${max_length}s  %s\n" "$flag_display" "$description"
+        # Substitui \n por quebra de linha com alinhamento ajustado (+2 para alinhar corretamente)
+        local formatted_description=""
+        local adjusted_length=$((max_length + 2))  # Aumentando 2 para o alinhamento correto
+
+        while IFS= read -r line; do
+            if [[ -n "$formatted_description" ]]; then
+                formatted_description+=$'\n'$(printf "%-*s" "$adjusted_length" " ")
+            fi
+            formatted_description+="$line"
+        done <<< "$(echo -e "$description")"
+
+        # Usa printf para alinhar corretamente
+        printf "%-${max_length}s  %s\n" "$flag_display" "$formatted_description"
     done
 }
+
+
 
 
 # processar todos os argumentos e buscar flags existentes.
