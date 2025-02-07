@@ -21,7 +21,7 @@ REPO_OWNER="phonevox"
 REPO_NAME="pbackup"
 REPO_URL="https://github.com/$REPO_OWNER/$REPO_NAME"
 ZIP_URL="$REPO_URL/archive/refs/heads/main.zip"
-APP_VERSION="v0.1.1" # honestly, I dont know how to do this better
+APP_VERSION="v0.1.2" # honestly, I dont know how to do this better
 
 # === FLAG GENERATION ===
 source "$CURRDIR/lib/ezflags.sh"
