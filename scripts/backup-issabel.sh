@@ -50,11 +50,6 @@ function log () {
 log "=== STARTING - ARGUMENTS: $*" muted
 
 function generate_backup_file() {
-    log "Checking for issabel-helper to handle backup generation..."
-    if ! [ -f "/usr/bin/issabel-helper" ]; then
-        log "ERROR: '/usr/bin/issabel-helper' not found. Is this really an IssabelPBX?"
-        exit 1
-    fi
 
     log "Generating Issabel backup, this might take a while..."
     /usr/bin/issabel-helper backupengine --backup --backupfile "$BACKUP_FILE" --tmpdir "$BACKUP_DIR" --components as_db,as_config_files,as_sounds,as_mohmp3,as_dahdi,fx_db,fx_pdf,ep_db,ep_config_files,callcenter_db,asternic_db,FOP2_settings_db,sugar_db,vtiger_db,a2billing_db,mysql_db,menus_permissions,calendar_db,address_db,conference_db,eop_db,int_ixcsoft,int_sgp,int_receitanet,int_altarede 2>&1
@@ -70,15 +65,15 @@ function generate_backup_file() {
 
 # === RUNTIME ===
 
-function main () {
+function validations () {
+    FULL_REMOTE_DEST="$1"
 
     # if not first argument, quit 
     log "Checking for required arguments..."
-    if  [ -z $1 ]; then
+    if  [ -z "$FULL_REMOTE_DEST" ]; then
         log "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
         exit 1
     fi
-    DESTINATION="$1"
 
     # test if usr/sbin/pbackup exists
     log "Checking if pbackup is installed..."
@@ -89,11 +84,23 @@ function main () {
 
     # check if remote exists
     log "Checking if remote exists..."
-    REMOTE_NAME="$(echo $DESTINATION | cut -d ':' -f 1)"
+    REMOTE_NAME="$(echo $FULL_REMOTE_DEST | cut -d ':' -f 1)"
     if ! $(pbackup --list | grep -q "^$REMOTE_NAME:"); then
         log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
     fi
+
+    # checking for issabelhelper, to generate the backups. if this is not present this may not be an issabel server
+    log "Checking for issabel-helper to handle backup generation..."
+    if ! [ -f "/usr/bin/issabel-helper" ]; then
+        log "ERROR: '/usr/bin/issabel-helper' not found. Is this really an IssabelPBX?"
+        exit 1
+    fi
+
+}
+
+function main () {
+    validations $@
 
     generate_backup_file
 
@@ -101,7 +108,6 @@ function main () {
     pbackup --files "$FILES" --to "$DESTINATION"
 
     log "Cleaning backupfile from local machine..."
-    
     if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
         rm -f "$BACKUP_DIR/$BACKUP_FILE"
     else

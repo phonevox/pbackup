@@ -35,21 +35,16 @@ function log () {
     fi
 }
 
-log "=== STARTING - ARGUMENTS: $*" muted
+log "=== STARTING - ARGUMENTS: $* ===" muted
 
 # === RUNTIME ===
 
 function validations () {
-    echo "Validation arguments:"
-    for i in "$@"; do
-        echo "Argument: $i"
-    done
-
-    DESTINATION="$1"
+    FULL_REMOTE_DEST="$1"
 
     # if not first argument, quit 
     log "Checking for required arguments..."
-    if  [ -z $1 ]; then
+    if  [ -z $FULL_REMOTE_DEST ]; then
         log "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
         exit 1
     fi
@@ -63,7 +58,7 @@ function validations () {
 
     # check if remote exists
     log "Checking if remote exists..."
-    REMOTE_NAME="$(echo $DESTINATION | cut -d ':' -f 1)"
+    REMOTE_NAME="$(echo $FULL_REMOTE_DEST | cut -d ':' -f 1)"
     if ! $(pbackup --list | grep -q "^$REMOTE_NAME:"); then
         log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
@@ -72,6 +67,10 @@ function validations () {
 
 function main () {
     validations $@
+
+    # generate database dump
+    # upload to pbackup
+    # clean database dump
 }
 
 main "$@"
