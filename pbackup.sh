@@ -29,6 +29,7 @@ source "$CURRDIR/lib/uzful.sh"
 
 # General flags
 add_flag "d" "dry" "Do NOT make changes to the system" bool
+add_flag "V" "verbose" "Prints more information about the script's progress" bool
 # Script flags
 add_flag "cf" "conf-file" "Path to a file containing multiple paths to upload. One path per line.\n- The paths can be formatted as \"<local>[:<remote>]\". If '-t|--to' destination is provided, \"[:<remote>]\" will be suffixed to the \"-t|--to\" flag's value.\n- Example: -t \"mega:/folder\" on \"./hello.txt:/test\" will be saved to \"mega:/folder/test/hello.txt\"" string
 add_flag "f" "files" "Path(s) to file(s) or folder(s) to be uploaded to remote. Separate multiple files by comma (,)\n- The paths can be formatted as \"<local>[:<remote>]\". If '-t|--to' destination is provided, \"[:<remote>]\" will be suffixed to the \"-t|--to\" flag's value.\n- Example: -t \"mega:/folder\" on \"./cheese.txt:/test\" will be saved to \"mega:/folder/test/cheese.txt\"" string
@@ -51,9 +52,11 @@ parse_flags $@
 
 # === POST-PARSE VARIABLES ===
 
+_DEBUG="false"
 _DAYS_AGO=0 # today
 hasFlag "y" && _DAYS_AGO=1
 hasFlag "da" && _DAYS_AGO=$(getFlag "da")
+hasFlag "V" && _DEBUG="true"
 
 # === UTILITARY FUNCTIONS ===
 
@@ -363,24 +366,11 @@ function main() {
             FINAL_DESTINATION="$FINAL_DESTINATION/$(basename "$SOURCE_PATH")"
         fi
 
-        echo "              PATH : $path"
-        echo "REMOTE DESTINATION : $REMOTE_DESTINATION"
-        echo "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
-        echo "       SOURCE_PATH : (what?) : $SOURCE_PATH"
-        echo " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
-
-        # TEST_PATH="$(echo "$path" | cut -d ':' -f 1)"
-        # CUSTOM_DESTINATION="$(echo "$path" | cut -d ':' -f 2)/$(basename "$TEST_PATH")"
-        # if [ "$CUSTOM_DESTINATION" == "$TEST_PATH" ]; then 
-        #     CUSTOM_DESTINATION="/$(basename "$TEST_PATH")"
-        # fi
-        # REMOTE_DESTINATION="$REMOTE_DESTINATION$CUSTOM_DESTINATION"
-
-        # path=$TEST_PATH
-        # echo "                PATH : $path"
-        # echo "ORIGINAL REMOTE DEST : $(getFlag "t")"
-        # echo "         CUSTOM DEST : $CUSTOM_DESTINATION"
-        # echo "         REMOTE DEST : $REMOTE_DESTINATION"
+        $_DEBUG && log "              PATH : $path"
+        $_DEBUG && log "REMOTE DESTINATION : $REMOTE_DESTINATION"
+        $_DEBUG && log "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
+        $_DEBUG && log "       SOURCE_PATH : (what?) : $SOURCE_PATH"
+        $_DEBUG && log " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
 
         if $(test -d "$SOURCE_PATH"); then
             log "- '$(colorir "azul" "$SOURCE_PATH/* (directory)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
