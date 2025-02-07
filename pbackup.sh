@@ -21,7 +21,7 @@ REPO_OWNER="phonevox"
 REPO_NAME="pbackup"
 REPO_URL="https://github.com/$REPO_OWNER/$REPO_NAME"
 ZIP_URL="$REPO_URL/archive/refs/heads/main.zip"
-APP_VERSION="v0.1.0" # honestly, I dont know how to do this better
+APP_VERSION="v0.1.1" # honestly, I dont know how to do this better
 
 # === FLAG GENERATION ===
 source "$CURRDIR/lib/ezflags.sh"
@@ -30,7 +30,6 @@ source "$CURRDIR/lib/uzful.sh"
 # General flags
 add_flag "d" "dry" "Do NOT make changes to the system" bool
 add_flag "t" "test" "Test mode" bool
-add_flag "v" "verbose" "Verbose mode" bool
 # Script flags
 add_flag "f" "from" "Source/local path (for configuration file)" string
 add_flag "m" "multiple" "Source/local paths, separated by comma (for multiple files/folders) i.e. -m './test.txt,./etc/test.txt'" string
@@ -57,10 +56,6 @@ parse_flags $@
 _DAYS_AGO=0 # today
 hasFlag "y" && _DAYS_AGO=1
 hasFlag "da" && _DAYS_AGO=$(getFlag "da")
-if hasFlag "v"; then echo "$APP_VERSION"; exit 0; fi
-if hasFlag "upd"; then UPDATE=true; fi
-if hasFlag "fu"; then FORCE_UPDATE=true; fi
-if hasFlag "install"; then ADD_TO_PATH=true; fi
 
 # === UTILITARY FUNCTIONS ===
 
@@ -271,7 +266,7 @@ function parse_date() {
 }
 
 function main() {
-
+    if hasFlag "v"; then echo "$SCRIPT_NAME> $APP_VERSION"; exit 0; fi
     if hasFlag "install"; then add_script_to_path; fi
     if hasFlag "update"; then check_for_updates "false"; fi
     if hasFlag "fu"; then check_for_updates "true"; fi # force
