@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/phonevox/pbackup/compare/v0.2.1...v0.3.0) (2025-02-07)
+
+
+### Features
+
+* new flag (test, ignore this) ([e7b17b3](https://github.com/phonevox/pbackup/commit/e7b17b3c3f36dca26e5df17a824d32ad3ce46db9))
+
+
+
 ## [0.2.1](https://github.com/phonevox/pbackup/compare/v0.2.0...v0.2.1) (2025-02-07)
 
 
