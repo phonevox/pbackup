@@ -98,7 +98,7 @@ function main () {
     generate_backup_file
 
     log "Uploading through pbackup..."
-    pbackup -m "$FILES" --to "$DESTINATION"
+    pbackup --files "$FILES" --to "$DESTINATION"
 
     log "Complete!"
 }
