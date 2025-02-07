@@ -1,3 +1,12 @@
+## [0.3.1](https://github.com/phonevox/pbackup/compare/v0.3.0...v0.3.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* **BREAKING:** rename flags ([e78f503](https://github.com/phonevox/pbackup/commit/e78f5034583a70e5d04e8257275cc7ce36ba0bbf))
+
+
+
 # [0.3.0](https://github.com/phonevox/pbackup/compare/v0.2.1...v0.3.0) (2025-02-07)
 
 
