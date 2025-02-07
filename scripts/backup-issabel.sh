@@ -100,7 +100,15 @@ function main () {
     log "Uploading through pbackup..."
     pbackup --files "$FILES" --to "$DESTINATION"
 
-    log "Complete!"
+    log "Cleaning backupfile from local machine..."
+    
+    if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
+        rm -f "$BACKUP_DIR/$BACKUP_FILE"
+    else
+        log "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
+    fi
+
+    log "All done!"
 }
 
 main "$@"
