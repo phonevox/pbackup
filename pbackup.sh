@@ -44,6 +44,8 @@ add_flag "da" "days-ago" "days ago (single day)" string
 add_flag "v" "version" "Show app version and exit" bool
 add_flag "upd:HIDDEN" "update" "Update this script to the newest version" bool
 add_flag "fu:HIDDEN" "force-update" "Force the update even if its in the same version" bool
+
+add_flag "test" "test-fake" "fake flag" bool # test flag for showcase, ignore
 # === GENERATING ===
 set_description "Phonevox's rclone abstraction for backups on cloud remotes.\nYou need to configure remotes on rclone manually (through 'rclone config')"
 set_usage "sudo bash $FULL_SCRIPT_PATH --from \"<local_paths_file>\" --to \"<remote_name>:<remote_path>\"\nEXAMPLES\nsudo bash $FULL_SCRIPT_PATH --from \"./file_with_paths.txt\" --to \"mega:/\"\nsudo bash $FULL_SCRIPT_PATH --multiple \"/path/one.txt,/path/two.conf,/path\" --to \"mega:/\""
