@@ -1,42 +1,28 @@
-name: Create Release
-
+name: Releases
 on:
   push:
     branches:
-      - main  # ou 'master', dependendo do nome da sua branch principal
-    # Isso aciona o workflow se o commit for um 'vX.Y.Z'
-    # Ajuste se quiser um padrão diferente
-    paths-ignore:
-      - '**/README.md'
+      - main
 
 jobs:
-  create_release:
-    if: startsWith(github.event.head_commit.message, 'v')
+  changelog:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Extract version from commit message
-        id: get_version
-        run: echo "::set-output name=VERSION::${GITHUB_EVENT_HEAD_COMMIT_MESSAGE}"
+      - name: "conventional Changelog Action"
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v3.7.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if release already exists
-        id: check_release
-        run: |
-          if gh release view "${{ steps.get_version.outputs.VERSION }}" &>/dev/null; then
-            echo "Release already exists!"
-            echo "::set-output name=exists::true"
-          else
-            echo "::set-output name=exists::false"
-          fi
+      - name: Create Release
+        uses: actions/create-release@v1
+        if: steps.changelog.outputs.skipped == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create GitHub Release
-        if: steps.check_release.outputs.exists == 'false'
-        run: |
-          gh release create "${{ steps.get_version.outputs.VERSION }}" --title "${{ steps.get_version.outputs.VERSION }}" --notes "Release created automatically."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          release_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
