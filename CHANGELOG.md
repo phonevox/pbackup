@@ -1,3 +1,12 @@
+## [0.4.1](https://github.com/phonevox/pbackup/compare/v0.4.0...v0.4.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* do not exit after rclone install ([f94d3f6](https://github.com/phonevox/pbackup/commit/f94d3f664a8ee7a0bf0a68faa856768ef0314adc))
+
+
+
 # [0.4.0](https://github.com/phonevox/pbackup/compare/v0.3.3...v0.4.0) (2025-02-10)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * **BREAKING:** rename flags ([e78f503](https://github.com/phonevox/pbackup/commit/e78f5034583a70e5d04e8257275cc7ce36ba0bbf))
-
-
-
-# [0.3.0](https://github.com/phonevox/pbackup/compare/v0.2.1...v0.3.0) (2025-02-07)
-
-
-### Features
-
-* new flag (test, ignore this) ([e7b17b3](https://github.com/phonevox/pbackup/commit/e7b17b3c3f36dca26e5df17a824d32ad3ce46db9))
 
 
 
