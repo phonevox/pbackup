@@ -59,7 +59,7 @@ function validations () {
     # check if remote exists
     log "Checking if remote exists..."
     REMOTE_NAME="$(echo $FULL_REMOTE_DEST | cut -d ':' -f 1)"
-    if ! $(pbackup --list | grep -q "^$REMOTE_NAME:"); then
+    if ! ! pbackup --list | grep -q "^$REMOTE_NAME:"; then
         log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
     fi
