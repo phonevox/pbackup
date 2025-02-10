@@ -33,13 +33,13 @@ pbackup --config # you might have to run this command twice!
 ```
 
 6. After you have the tool installed to your path, and a remote configured in rclone (pbackup --config / rclone config), you can use the pre-made backup scripts:
-> backup-issabel.sh is premade for generating issabelpbx's backups (using our backup engine. it also works without our engine) and
-> backup-magnus.sh is premade for generating magnusbilling backups
+> issabel-backup.sh is premade for generating issabelpbx's backups (using our backup engine. it also works without our engine) and
+> magnus-backup.sh is premade for generating magnusbilling backups
 
 ```sh
-  ./scripts/backup-issabel.sh <remote> 
-# ./scripts/backup-issabel.sh "mega:/backup-$(date +"%d-%m-%Y")"
+  ./scripts/issabel-backup.sh <remote> 
+# ./scripts/issabel-backup.sh "mega:/backup-$(date +"%d-%m-%Y")"
 
-  ./scripts/backup-magnus.sh <remote> 
-# ./scripts/backup-magnus.sh "mega:/backup-$(date +"%d-%m-%Y")"
+  ./scripts/magnus-backup.sh <remote> 
+# ./scripts/magnus-backup.sh "mega:/backup-$(date +"%d-%m-%Y")"
 ```
