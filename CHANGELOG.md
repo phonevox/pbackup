@@ -1,3 +1,12 @@
+## [0.5.1](https://github.com/phonevox/pbackup/compare/v0.5.0...v0.5.1) (2025-02-10)
+
+
+### Bug Fixes
+
+* remote checking wrong ([2cfe9d2](https://github.com/phonevox/pbackup/commit/2cfe9d20faa23cfdf875adbf9743c506c40da5ea))
+
+
+
 # [0.5.0](https://github.com/phonevox/pbackup/compare/v0.4.1...v0.5.0) (2025-02-10)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * config file checking wrong flag, causing app to be stuck ([0d17cae](https://github.com/phonevox/pbackup/commit/0d17cae66f578161ab642519cac944cc24c44fab))
-
-
-
-## [0.3.2](https://github.com/phonevox/pbackup/compare/v0.3.1...v0.3.2) (2025-02-07)
-
-
-### Bug Fixes
-
-* wrong flag on issabel script ([d2440a1](https://github.com/phonevox/pbackup/commit/d2440a187564a7af289739decc17f41812726776))
 
 
 
