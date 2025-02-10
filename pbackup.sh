@@ -222,7 +222,7 @@ function version_is_greater() {
 
 function parse_date() {
     local INPUT="$1"
-    local CURRENT_DATE=$(date +%Y-%m-%d)  # Mantemos um formato padrão AAAA-MM-DD
+    local CURRENT_DATE=$(date +%Y-%m-%d %H-%M-%s)  # Mantemos um formato padrão AAAA-MM-DD
 
     # Tratamento de %DAY%
     if [[ "$INPUT" =~ %DAY% ]]; then
@@ -240,6 +240,24 @@ function parse_date() {
     if [[ "$INPUT" =~ %YEAR% ]]; then
         local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%Y)
         INPUT=$(echo "$INPUT" | sed "s/%YEAR%/$NEW_DATE/g")
+    fi
+
+    # Tratamento de %HOUR%
+    if [[ "$INPUT" =~ %HOUR% ]]; then
+        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%H)
+        INPUT=$(echo "$INPUT" | sed "s/%HOUR%/$NEW_DATE/g")
+    fi
+
+    # Tratamento de %MINUTE%
+    if [[ "$INPUT" =~ %MINUTE% ]]; then
+        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%M)
+        INPUT=$(echo "$INPUT" | sed "s/%MINUTE%/$NEW_DATE/g")
+    fi
+
+    # Tratamento de %SECOND%
+    if [[ "$INPUT" =~ %SECOND% ]]; then
+        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%S)
+        INPUT=$(echo "$INPUT" | sed "s/%SECOND%/$NEW_DATE/g")
     fi
 
     # Tratamento de %DAY-n%
@@ -358,7 +376,7 @@ function main() {
     for path in "${PATHS_TO_UPLOAD[@]}"; do
         REMOTE_DESTINATION="$(getFlag "t")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
         CUSTOM_DESTINATION="$(echo "$path" | awk -F ':' '{print ($2 != "") ? $2 : ""}')"
-        FINAL_DESTINATION="$REMOTE_DESTINATION$CUSTOM_DESTINATION"
+        FINAL_DESTINATION=$(parse_date "$REMOTE_DESTINATION$CUSTOM_DESTINATION")
         SOURCE_PATH="$(echo "$path" | cut -d ':' -f 1)"
 
         if $(test -d "$SOURCE_PATH"); then # if its a folder, tell cloud to create the base folder too
