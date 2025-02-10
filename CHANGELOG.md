@@ -1,3 +1,12 @@
+# [0.5.0](https://github.com/phonevox/pbackup/compare/v0.4.1...v0.5.0) (2025-02-10)
+
+
+### Features
+
+* support for HOUR, MINUTE and SECOND variables to use in cron ([61322bd](https://github.com/phonevox/pbackup/commit/61322bdefada006de3d877adee419934b0b35541))
+
+
+
 ## [0.4.1](https://github.com/phonevox/pbackup/compare/v0.4.0...v0.4.1) (2025-02-10)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * wrong flag on issabel script ([d2440a1](https://github.com/phonevox/pbackup/commit/d2440a187564a7af289739decc17f41812726776))
-
-
-
-## [0.3.1](https://github.com/phonevox/pbackup/compare/v0.3.0...v0.3.1) (2025-02-07)
-
-
-### Bug Fixes
-
-* **BREAKING:** rename flags ([e78f503](https://github.com/phonevox/pbackup/commit/e78f5034583a70e5d04e8257275cc7ce36ba0bbf))
 
 
 
