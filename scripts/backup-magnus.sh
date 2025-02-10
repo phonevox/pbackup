@@ -68,22 +68,47 @@ function validations () {
 function main () {
     validations $@
 
-    # generate database dump
-    log "Dumping database..."
-    EXPECTED_DUMP_LOCATION="$CURRDIR/mbilling.sql"
-    # @NOTE(Adrian) : There is something about skipping specific tables that is not working. Check it out later
-    mysql -uroot -p$(cat /root/passwordMysql.log) mbilling > $EXPECTED_DUMP_LOCATION 
+    FILES_TO_UPLOAD=()
+    RECORDINGS=false
+    AUDIO_FILES=false
 
-    # @TODO(Adrian) : get other files to upload (recordings, asterisk files, sound files)
-    # @TODO(Adrian) : upload to pbackup
+    # @TODO(Adrian) : locate yesterday's backup file, confirm it exists
 
-    # clean database dump
-    if [ -f $EXPECTED_DUMP_LOCATION ]; then
-        log "CLEAN UP : Cleaning up database dump..."
-        rm -f $EXPECTED_DUMP_LOCATION
+    TODAY=$(date '+%d-%m-%Y')
+    YESTERDAY=$(date -d "yesterday" '+%d-%m-%Y')
+    YESTERDAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$YESTERDAY.tgz
+
+
+    log "Looking for yesterday's backup file... ($YESTERDAY_BACKUP_FILE)"
+    if ! [ -f $YESTERDAY_BACKUP_FILE ]; then
+        log "WARN: Could not locate yesterday's backup file! Trying to make today's backup..."
+        
+        # make backup
+        if ! [ -f /var/www/html/mbilling/cron.php ]; then
+            log "ERROR: Could not locate mbilling cron.php! Is this really a mbilling server? Exiting... (/var/www/html/mbilling/cron.php)"
+            exit 1
+        fi
+        php /var/www/html/mbilling/cron.php Backup
+
+        TODAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$TODAY.tgz
+        if ! [ -f $TODAY_BACKUP_FILE ]; then
+            log "ERROR: Failed to generate today's backup file! Exiting... ($TODAY_BACKUP_FILE)"
+            log "failed: $TODAY_BACKUP_FILE"
+            exit 1
+        fi 
+
+        log "SUCCESS: Today's backup file generated! ($TODAY_BACKUP_FILE)"
+        FILES_TO_UPLOAD+=($TODAY_BACKUP_FILE)
     else
-        log "CLEAN UP : Database dump not found, we won't delete anything. Searched location: \"$EXPECTED_DUMP_LOCATION\""
+        log "Yesterday's backup file found! Using it..."
+        FILES_TO_UPLOAD+=($YESTERDAY_BACKUP_FILE)
     fi
+
+    # show files to be uploded, separated by commas, no spaces
+    log "Files to be uploaded:"
+    read -a FILES_TO_UPLOAD <<< $(echo $FILES_TO_UPLOAD | tr ' ' ',')
+    log "Files to be uploaded: $FILES_TO_UPLOAD"
+
 }
 
 main "$@"

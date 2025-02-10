@@ -2,7 +2,7 @@
 
 1. Download the latest tag (one liner)
 ```sh
-curl -s https://api.github.com/repos/phonevox/pbackup/releases/latest | grep '"tag_name":' | sed 's/.*"tag_name": "\(.*\)",/\1/' | xargs -I {} curl -skL https://github.com/phonevox/pbackup/archive/refs/tags/{}.tar.gz | tar xz --transform="s,^[^/]*,pbackup,"
+curl -s https://api.github.com/repos/phonevox/pbackup/releases/latest | grep '"tag_name":' | sed 's/.*"tag_name": "\(.*\)",/\1/' | xargs -I {} curl -skL https://github.com/phonevox/pbackup/archive/refs/tags/{}.tar.gz | tar xz --transform="s,^[^/]*,pbackup,"; find pbackup -type f -name "*.sh" -exec chmod +x {} \;
 ```
 
 2. Access the repository's folder
@@ -12,7 +12,6 @@ cd ./pbackup
 
 3. Install pbackup tool to your path, or use it directly
 ```sh
-chmod +x ./*.sh ./lib/*.sh ./scripts/*.sh # this is necessary! script has to be executable
 ./pbackup --install # adds to system path (specifically /usr/sbin/pbackup), call with 'pbackup -h'
 ./pbackup --update # update to most recent github tag. not necessary if you just cloned the repository
 ./pbackup --help # shows how to use the app
