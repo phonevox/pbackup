@@ -285,8 +285,7 @@ function main() {
 
         srun "sudo -v ; curl https://rclone.org/install.sh | sudo bash"
 
-        log "- SUCCESS! rclone was installed. Please configure your remotes on rclone manually (through 'rclone config')"
-        exit 0
+        log "- SUCCESS! rclone was installed."
     else
         log "- OK"
     fi
