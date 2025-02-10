@@ -69,16 +69,14 @@ function main () {
     validations $@
 
     FILES_TO_UPLOAD=()
-    RECORDINGS=false
-    AUDIO_FILES=false
-
-    # @TODO(Adrian) : locate yesterday's backup file, confirm it exists
-
+    GET_RECORDINGS="true"
+    GET_SOUND_FILES="true"
     TODAY=$(date '+%d-%m-%Y')
     YESTERDAY=$(date -d "yesterday" '+%d-%m-%Y')
+
+    # - Firstly, we need one backup file. Yesterday prefferably, but if it does not exist, make a new one.
+    # If something goes wrong, stop.
     YESTERDAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$YESTERDAY.tgz
-
-
     log "Looking for yesterday's backup file... ($YESTERDAY_BACKUP_FILE)"
     if ! [ -f $YESTERDAY_BACKUP_FILE ]; then
         log "WARN: Could not locate yesterday's backup file! Trying to make today's backup..."
@@ -104,10 +102,40 @@ function main () {
         FILES_TO_UPLOAD+=($YESTERDAY_BACKUP_FILE)
     fi
 
-    # show files to be uploded, separated by commas, no spaces
-    log "Files to be uploaded:"
-    read -a FILES_TO_UPLOAD <<< $(echo $FILES_TO_UPLOAD | tr ' ' ',')
-    log "Files to be uploaded: $FILES_TO_UPLOAD"
+    # - Now, get extra files
+    if $GET_RECORDINGS; then
+        log "Compacting recordings..."
+        tar -czf /tmp/recordings.$TODAY.tgz /var/spool/asterisk/monitor
+        FILES_TO_UPLOAD+=("/tmp/recordings.$TODAY.tgz")
+    fi
+    if $GET_SOUND_FILES; then
+        log "Compacting sound files..."
+        tar -czf /tmp/soundfiles.$TODAY.tgz /usr/local/src/magnus/sounds
+        FILES_TO_UPLOAD+=("/tmp/soundfiles.$TODAY.tgz")
+    fi
+
+    # add everything that is not the backup_voip_softswitch file to the clean list
+    # so we remember to delete it after uploading
+    FILES_TO_CLEAN=()
+    for FILE in ${FILES_TO_UPLOAD[@]}; do
+        if ! [[ "$FILE" == *"backup_voip_softswitch"* ]]; then
+            FILES_TO_CLEAN+=("$FILE")
+        fi
+    done
+
+    # convert files to upload into pbackup format (File1,F2,F3,F4[...])
+    read -a FILES <<< $(echo ${FILES_TO_UPLOAD[@]} | tr ' ' ',')
+
+    log "Uploading through pbackup..."
+    pbackup --files "$FILES" --to "$FULL_REMOTE_DEST"
+
+    log "Cleaning up..."
+    for FILE in ${FILES_TO_CLEAN[@]}; do
+        log "- Deleting $FILE"
+        rm -f $FILE
+    done
+
+    log "All done!"
 
 }
 

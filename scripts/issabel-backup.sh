@@ -105,7 +105,7 @@ function main () {
     generate_backup_file
 
     log "Uploading through pbackup..."
-    pbackup --files "$FILES" --to "$DESTINATION"
+    pbackup --files "$FILES" --to "$FULL_REMOTE_DEST"
 
     log "Cleaning backupfile from local machine..."
     if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
