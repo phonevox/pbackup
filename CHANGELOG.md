@@ -1,3 +1,12 @@
+## [0.6.4](https://github.com/phonevox/pbackup/compare/v0.6.3...v0.6.4) (2025-02-11)
+
+
+### Bug Fixes
+
+* remove pvox components from base components ([5c44c80](https://github.com/phonevox/pbackup/commit/5c44c807cfdd83e79a62c0b458eb945b193d0c72))
+
+
+
 ## [0.6.3](https://github.com/phonevox/pbackup/compare/v0.6.2...v0.6.3) (2025-02-11)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * install to multiple paths ([618f3d9](https://github.com/phonevox/pbackup/commit/618f3d959da92a0c4ee3b65ef34787c9296b55e6))
-
-
-
-## [0.5.1](https://github.com/phonevox/pbackup/compare/v0.5.0...v0.5.1) (2025-02-10)
-
-
-### Bug Fixes
-
-* remote checking wrong ([2cfe9d2](https://github.com/phonevox/pbackup/commit/2cfe9d20faa23cfdf875adbf9743c506c40da5ea))
 
 
 
