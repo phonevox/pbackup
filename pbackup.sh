@@ -106,31 +106,37 @@ function rpm_is_installed() {
 # Usage: add_script_to_path 
 function add_script_to_path() {
     local _BIN_NAME="$(echo $SCRIPT_NAME | cut -d '.' -f 1)"
-    local _PATH="/usr/sbin/$_BIN_NAME"
+    local _PATHS=("/usr/sbin/$_BIN_NAME" "/usr/bin/$_BIN_NAME")
     local _PATH_SCRIPT_BINARY="$FULL_SCRIPT_PATH"
 
-    local _CURRENT_SYMLINK_PATH=$(readlink -f "$_PATH") # where the current symlink is pointing towards
-    if [[ -f "$_CURRENT_SYMLINK_PATH" ]]; then _SYMLINK_FILE_EXISTS=true; else _SYMLINK_FILE_EXISTS=false; fi # does the file which the symlink is pointing towards to, exists?
+    for _PATH in "${_PATHS[@]}"; do
+        local _CURRENT_SYMLINK_PATH=$(readlink -f "$_PATH") # where the current symlink is pointing towards
+        if [[ -f "$_CURRENT_SYMLINK_PATH" ]]; then 
+            _SYMLINK_FILE_EXISTS=true
+        else 
+            _SYMLINK_FILE_EXISTS=false
+        fi # does the file which the symlink is pointing towards exist?
 
-    echo "- $(colorir "azul" "Trying to add '$FULL_SCRIPT_PATH' to path '$_PATH'")"
-    if [[ "$_CURRENT_SYMLINK_PATH" == "$_PATH_SCRIPT_BINARY" ]]; then
-        # symlink is pointing towards this script.
-        echo "- $(colorir verde "Your symlink ($_PATH) is set up correctly: $_PATH")"
-    else
-        if $_SYMLINK_FILE_EXISTS; then # symlink is pointing towards something else
-            echo "- $(colorir amarelo "Your symlink ($_PATH) is pointing to something else: $_CURRENT_SYMLINK_PATH (expected $FULL_SCRIPT_PATH)")"
-            echo "> Do you want to update it? ($(colorir verde y)/$(colorir vermelho n))"
-            read -r _answer
-            if ! [[ "$_answer" == "y" ]]; then
-                echo "Exiting..."
-                exit 1
+        echo "- $(colorir "azul" "Trying to add '$FULL_SCRIPT_PATH' to path '$_PATH'")"
+        if [[ "$_CURRENT_SYMLINK_PATH" == "$_PATH_SCRIPT_BINARY" ]]; then
+            # symlink is pointing towards this script.
+            echo "- $(colorir verde "Your symlink ($_PATH) is set up correctly: $_PATH")"
+        else
+            if $_SYMLINK_FILE_EXISTS; then # symlink is pointing towards something else
+                echo "- $(colorir amarelo "Your symlink ($_PATH) is pointing to something else: $_CURRENT_SYMLINK_PATH (expected $FULL_SCRIPT_PATH)")"
+                echo "> Do you want to update it? ($(colorir verde y)/$(colorir vermelho n))"
+                read -r _answer
+                if ! [[ "$_answer" == "y" ]]; then
+                    echo "Skipping $_PATH..."
+                    continue
+                fi
             fi
-        fi
 
-        # symlink does not exist, and user is fine with it being created
-        echo "- $(colorir verde "Adding to path... ('$_PATH' -> '$_PATH_SCRIPT_BINARY')")"
-        srun "ln -sf \"$_PATH_SCRIPT_BINARY\" \"$_PATH\""
-    fi
+            # symlink does not exist, and user is fine with it being created
+            echo "- $(colorir verde "Adding to path... ('$_PATH' -> '$_PATH_SCRIPT_BINARY')")"
+            srun "ln -sf \"$_PATH_SCRIPT_BINARY\" \"$_PATH\""
+        fi
+    done
 
     exit 0
 }
