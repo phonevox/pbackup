@@ -1,3 +1,12 @@
+# [0.6.0](https://github.com/phonevox/pbackup/compare/v0.5.1...v0.6.0) (2025-02-11)
+
+
+### Features
+
+* install to multiple paths ([618f3d9](https://github.com/phonevox/pbackup/commit/618f3d959da92a0c4ee3b65ef34787c9296b55e6))
+
+
+
 ## [0.5.1](https://github.com/phonevox/pbackup/compare/v0.5.0...v0.5.1) (2025-02-10)
 
 
@@ -38,15 +47,6 @@
 * cleanup local backupfile on issabel backup script ([6e12893](https://github.com/phonevox/pbackup/commit/6e12893094f224ddf3d27b313b69b864e2d413cc))
 * magnus backup. renamed backup scripts ([eb8b414](https://github.com/phonevox/pbackup/commit/eb8b414d43f816266cf95f9eb5a7251c6eb79979))
 * verbose flag, cleanup ([c523332](https://github.com/phonevox/pbackup/commit/c5233327fe4044fb47a4625fc49a3b8a2d48bdbf))
-
-
-
-## [0.3.3](https://github.com/phonevox/pbackup/compare/v0.3.2...v0.3.3) (2025-02-07)
-
-
-### Bug Fixes
-
-* config file checking wrong flag, causing app to be stuck ([0d17cae](https://github.com/phonevox/pbackup/commit/0d17cae66f578161ab642519cac944cc24c44fab))
 
 
 
