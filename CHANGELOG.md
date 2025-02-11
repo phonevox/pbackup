@@ -1,3 +1,12 @@
+## [0.6.3](https://github.com/phonevox/pbackup/compare/v0.6.2...v0.6.3) (2025-02-11)
+
+
+### Bug Fixes
+
+* validate pvox backupengine for issabel script ([962acdb](https://github.com/phonevox/pbackup/commit/962acdb8d73fb3b925a80eeef24f5ac11b87adc4))
+
+
+
 ## [0.6.2](https://github.com/phonevox/pbackup/compare/v0.6.1...v0.6.2) (2025-02-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * remote checking wrong ([2cfe9d2](https://github.com/phonevox/pbackup/commit/2cfe9d20faa23cfdf875adbf9743c506c40da5ea))
-
-
-
-# [0.5.0](https://github.com/phonevox/pbackup/compare/v0.4.1...v0.5.0) (2025-02-10)
-
-
-### Features
-
-* support for HOUR, MINUTE and SECOND variables to use in cron ([61322bd](https://github.com/phonevox/pbackup/commit/61322bdefada006de3d877adee419934b0b35541))
 
 
 
