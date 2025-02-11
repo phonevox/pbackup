@@ -379,10 +379,11 @@ function main() {
     fi
 
     log "Starting upload..."
+    REMOTE_DESTINATION="$(getFlag "t")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
+    REMOTE_DESTINATION=$(parse_date "$REMOTE_DESTINATION")
     for path in "${PATHS_TO_UPLOAD[@]}"; do
-        REMOTE_DESTINATION="$(getFlag "t")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
         CUSTOM_DESTINATION="$(echo "$path" | awk -F ':' '{print ($2 != "") ? $2 : ""}')"
-        FINAL_DESTINATION=$(parse_date "$REMOTE_DESTINATION$CUSTOM_DESTINATION")
+        FINAL_DESTINATION="$REMOTE_DESTINATION$CUSTOM_DESTINATION"
         SOURCE_PATH="$(echo "$path" | cut -d ':' -f 1)"
 
         if $(test -d "$SOURCE_PATH"); then # if its a folder, tell cloud to create the base folder too
