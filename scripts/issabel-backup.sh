@@ -51,7 +51,7 @@ log "=== STARTING - ARGUMENTS: $*" muted
 
 function generate_backup_file() {
 
-    local COMPONENTS="as_db,as_config_files,as_sounds,as_mohmp3,as_dahdi,fx_db,fx_pdf,ep_db,ep_config_files,callcenter_db,asternic_db,FOP2_settings_db,sugar_db,vtiger_db,a2billing_db,mysql_db,menus_permissions,calendar_db,address_db,conference_db,eop_db,int_ixcsoft,int_sgp,int_receitanet,int_altarede"
+    local COMPONENTS="as_db,as_config_files,as_sounds,as_mohmp3,as_dahdi,fx_db,fx_pdf,ep_db,ep_config_files,callcenter_db,asternic_db,FOP2_settings_db,sugar_db,vtiger_db,a2billing_db,mysql_db,menus_permissions,calendar_db,address_db,conference_db,eop_db"
 
     # adding extra components if our custom bkp engine is installed
     if [ -f "/usr/share/issabel/privileged/pvx-backupengine-extras" ]; then
