@@ -1,3 +1,12 @@
+## [0.6.2](https://github.com/phonevox/pbackup/compare/v0.6.1...v0.6.2) (2025-02-11)
+
+
+### Bug Fixes
+
+* remote destination interpret date on every new file ([1275a5a](https://github.com/phonevox/pbackup/commit/1275a5a9f3afd0dd997dd72861ee9d5802460ddb))
+
+
+
 ## [0.6.1](https://github.com/phonevox/pbackup/compare/v0.6.0...v0.6.1) (2025-02-11)
 
 
@@ -31,15 +40,6 @@
 ### Features
 
 * support for HOUR, MINUTE and SECOND variables to use in cron ([61322bd](https://github.com/phonevox/pbackup/commit/61322bdefada006de3d877adee419934b0b35541))
-
-
-
-## [0.4.1](https://github.com/phonevox/pbackup/compare/v0.4.0...v0.4.1) (2025-02-10)
-
-
-### Bug Fixes
-
-* do not exit after rclone install ([f94d3f6](https://github.com/phonevox/pbackup/commit/f94d3f664a8ee7a0bf0a68faa856768ef0314adc))
 
 
 
