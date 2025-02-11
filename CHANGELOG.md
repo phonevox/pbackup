@@ -1,3 +1,12 @@
+## [0.6.1](https://github.com/phonevox/pbackup/compare/v0.6.0...v0.6.1) (2025-02-11)
+
+
+### Bug Fixes
+
+* typo on remote checking ([2aac740](https://github.com/phonevox/pbackup/commit/2aac7403000273d1ae5fe04be1fa4bb4de519eca))
+
+
+
 # [0.6.0](https://github.com/phonevox/pbackup/compare/v0.5.1...v0.6.0) (2025-02-11)
 
 
@@ -31,22 +40,6 @@
 ### Bug Fixes
 
 * do not exit after rclone install ([f94d3f6](https://github.com/phonevox/pbackup/commit/f94d3f664a8ee7a0bf0a68faa856768ef0314adc))
-
-
-
-# [0.4.0](https://github.com/phonevox/pbackup/compare/v0.3.3...v0.4.0) (2025-02-10)
-
-
-### Bug Fixes
-
-* display starting arguments, begin magnus backup script ([bf17a27](https://github.com/phonevox/pbackup/commit/bf17a274fd90dd324a1ba77036bad92ba1fa0f19))
-
-
-### Features
-
-* cleanup local backupfile on issabel backup script ([6e12893](https://github.com/phonevox/pbackup/commit/6e12893094f224ddf3d27b313b69b864e2d413cc))
-* magnus backup. renamed backup scripts ([eb8b414](https://github.com/phonevox/pbackup/commit/eb8b414d43f816266cf95f9eb5a7251c6eb79979))
-* verbose flag, cleanup ([c523332](https://github.com/phonevox/pbackup/commit/c5233327fe4044fb47a4625fc49a3b8a2d48bdbf))
 
 
 
