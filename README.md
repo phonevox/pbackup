@@ -43,3 +43,15 @@ pbackup --config # you might have to run this command twice!
   ./scripts/magnus-backup.sh <remote> 
 # ./scripts/magnus-backup.sh "mega:/backup-$(date +"%d-%m-%Y")"
 ```
+
+7. You add the scripts to your cron, and you're done!
+> Remember that you have to escape the "%" character when using cron.
+> Adjust the below examples to your needs
+
+```
+# For Magnusbilling
+`0 2 * * * /root/pbackup/scripts/magnus-backup.sh "<REMOTE>:/magnusbilling-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"`
+
+# For IssabelPBX
+`0 2 * * * /root/pbackup/scripts/issabel-backup.sh "<REMOTE>:/issabelpbx-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"`
+```
