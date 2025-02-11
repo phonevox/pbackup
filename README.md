@@ -50,8 +50,8 @@ pbackup --config # you might have to run this command twice!
 
 ```
 # For Magnusbilling
-`0 2 * * * /root/pbackup/scripts/magnus-backup.sh "<REMOTE>:/magnusbilling-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"`
+0 2 * * * /root/pbackup/scripts/magnus-backup.sh "<REMOTE>:/magnusbilling-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"
 
 # For IssabelPBX
-`0 2 * * * /root/pbackup/scripts/issabel-backup.sh "<REMOTE>:/issabelpbx-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"`
+0 2 * * * /root/pbackup/scripts/issabel-backup.sh "<REMOTE>:/issabelpbx-\%DAY\%\%MONTH\%\%YEAR\%-\%HOUR\%\%MINUTE\%\%SECOND\%"
 ```
