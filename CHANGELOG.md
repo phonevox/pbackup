@@ -1,3 +1,12 @@
+## [0.6.5](https://github.com/phonevox/pbackup/compare/v0.6.4...v0.6.5) (2025-02-12)
+
+
+### Bug Fixes
+
+* change log location to /var/log/pbackup.log ([3bfaed0](https://github.com/phonevox/pbackup/commit/3bfaed060b81c31f95b4df5d6c366f57b9401a78))
+
+
+
 ## [0.6.4](https://github.com/phonevox/pbackup/compare/v0.6.3...v0.6.4) (2025-02-11)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * typo on remote checking ([2aac740](https://github.com/phonevox/pbackup/commit/2aac7403000273d1ae5fe04be1fa4bb4de519eca))
-
-
-
-# [0.6.0](https://github.com/phonevox/pbackup/compare/v0.5.1...v0.6.0) (2025-02-11)
-
-
-### Features
-
-* install to multiple paths ([618f3d9](https://github.com/phonevox/pbackup/commit/618f3d959da92a0c4ee3b65ef34787c9296b55e6))
 
 
 
