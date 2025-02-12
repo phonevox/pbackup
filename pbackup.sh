@@ -12,8 +12,8 @@ CURRDIR="$(dirname "$FULL_SCRIPT_PATH")"
 SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
-LOG_FILE_PATH="$CURRDIR"
-LOG_FILE_NAME="pvx-backup"
+LOG_FILE_PATH="/var/log"
+LOG_FILE_NAME="pbackup.log"
 LOG_FILE="$LOG_FILE_PATH/$LOG_FILE_NAME-$(date '+%Y-%m-%d').log"
 
 # Versioning 
