@@ -1,3 +1,12 @@
+## [0.6.6](https://github.com/phonevox/pbackup/compare/v0.6.5...v0.6.6) (2025-02-25)
+
+
+### Bug Fixes
+
+* (temporary) better rclone output ([0ed21f8](https://github.com/phonevox/pbackup/commit/0ed21f8eb3cca56e0b910d817adfcac6cb389d6a))
+
+
+
 ## [0.6.5](https://github.com/phonevox/pbackup/compare/v0.6.4...v0.6.5) (2025-02-12)
 
 
@@ -31,15 +40,6 @@
 ### Bug Fixes
 
 * remote destination interpret date on every new file ([1275a5a](https://github.com/phonevox/pbackup/commit/1275a5a9f3afd0dd997dd72861ee9d5802460ddb))
-
-
-
-## [0.6.1](https://github.com/phonevox/pbackup/compare/v0.6.0...v0.6.1) (2025-02-11)
-
-
-### Bug Fixes
-
-* typo on remote checking ([2aac740](https://github.com/phonevox/pbackup/commit/2aac7403000273d1ae5fe04be1fa4bb4de519eca))
 
 
 
