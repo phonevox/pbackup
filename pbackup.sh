@@ -402,7 +402,21 @@ function main() {
             if hasFlag "d"; then
                 log "$(colorir "amarelo" "[DRY]") rclone copy \"$SOURCE_PATH\" \"$FINAL_DESTINATION\" --progress"
             else
-                rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress
+                # Executa o rclone e captura a saída
+                output=$(rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress 2>&1)
+                rclone_exit_code=$?
+
+                # Loga a saída do rclone
+                while IFS= read -r line; do
+                    log "(rclone) $line"
+                done <<< "$output"
+
+                # Verifica se o rclone foi bem-sucedido
+                if [ $rclone_exit_code -eq 0 ]; then
+                    log "Upload successful: $SOURCE_PATH"
+                else
+                    log "$(colorir "vermelho" "Failed to upload: $SOURCE_PATH!")"
+                fi
             fi
 
         elif $(test -f "$SOURCE_PATH"); then
@@ -411,7 +425,21 @@ function main() {
             if hasFlag "d"; then
                 log "$(colorir "amarelo" "[DRY]") rclone copy \"$SOURCE_PATH\" \"$FINAL_DESTINATION\" --progress"
             else
-                rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress
+                # Executa o rclone e captura a saída
+                output=$(rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress 2>&1)
+                rclone_exit_code=$?
+
+                # Loga a saída do rclone
+                while IFS= read -r line; do
+                    log "(rclone) $line"
+                done <<< "$output"
+
+                # Verifica se o rclone foi bem-sucedido
+                if [ $rclone_exit_code -eq 0 ]; then
+                    log "Upload successful: $SOURCE_PATH"
+                else
+                    log "$(colorir "vermelho" "Failed to upload: $SOURCE_PATH!")"
+                fi
             fi
 
         else
