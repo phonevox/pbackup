@@ -335,10 +335,10 @@ function main() {
         REMOTE="$(getFlag "delete")"
         log "Deleting remote... \"$REMOTE\""
         if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
-            log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with --no-failsafe")"
+            log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
             exit 1
         fi
-        rclone delete "$REMOTE"
+        rclone delete "$REMOTE" --rmdirs
         exit 0
     fi
 
