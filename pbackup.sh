@@ -13,6 +13,7 @@ SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
 LOG_FILE_PATH="/var/log"
+[ -w "$LOG_FILE_PATH" ] || LOG_FILE_PATH="$CURRDIR" # if not writable, use current directory
 LOG_FILE_NAME="pbackup.log"
 LOG_FILE="$LOG_FILE_PATH/$LOG_FILE_NAME-$(date '+%Y-%m-%d').log"
 
