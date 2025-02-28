@@ -37,6 +37,7 @@ add_flag "f" "files" "Path(s) to file(s) or folder(s) to be uploaded to remote. 
 add_flag "t" "to" "rclone's remote name. Optionally can also set to where, on the remote, your files will be moved to.\n- Example: -t|--to \"<remote_name>[:<path>]\"" string
 add_flag "config:HIDDEN" "config" "Alias for \"rclone config\"" bool
 add_flag "delete:HIDDEN" "delete" "Alias for \"rclone delete\"" string
+add_flag "purge:HIDDEN" "purge" "Alias for \"rclone purge\"" string
 add_flag "nfs:HIDDEN" "no-failsafe" "Run unsafe commands, even if they trigger a failsafe mechanism." bool
 add_flag "list:HIDDEN" "list" "Alias for \"rclone listremotes\"" bool
 add_flag "install:HIDDEN" "install" "Install this script to your path, so you can call it from anywhere with '$(echo $SCRIPT_NAME | cut -d '.' -f 1) <flags>'" bool
@@ -334,12 +335,59 @@ function main() {
     if hasFlag "delete"; then
         REMOTE="$(getFlag "delete")"
         log "Deleting remote... \"$REMOTE\""
+
         if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
             log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
             exit 1
         fi
-        rclone delete "$REMOTE" --rmdirs
-        exit 0
+
+        # Executa o rclone delete e captura a saída
+        echo "test: rclone delete \"$REMOTE\" --rmdirs"
+        output=$(rclone delete "$REMOTE" --rmdirs 2>&1)
+        rclone_exit_code=$?
+
+        # Loga a saída do rclone
+        while IFS= read -r line; do
+            log "(rclone) $line"
+        done <<< "$output"
+
+        # Verifica se o rclone foi bem-sucedido
+        if [ $rclone_exit_code -eq 0 ]; then
+            log "Delete successful: $REMOTE"
+        else
+            log "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
+        fi
+
+        exit $rclone_exit_code
+    fi
+
+    if hasFlag "purge"; then
+        REMOTE="$(getFlag "purge")"
+        log "Purging remote... \"$REMOTE\""
+
+        if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
+            log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
+            exit 1
+        fi
+
+        # Executa o rclone purge e captura a saída
+        echo "test: rclone purge \"$REMOTE\" --rmdirs"
+        output=$(rclone purge "$REMOTE" --rmdirs 2>&1)
+        rclone_exit_code=$?
+
+        # Loga a saída do rclone
+        while IFS= read -r line; do
+            log "(rclone) $line"
+        done <<< "$output"
+
+        # Verifica se o rclone foi bem-sucedido
+        if [ $rclone_exit_code -eq 0 ]; then
+            log "Purge successful: $REMOTE"
+        else
+            log "$(colorir "vermelho" "Failed to purge: $REMOTE!")"
+        fi
+
+        exit $rclone_exit_code
     fi
 
     # check remote exists
