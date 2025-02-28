@@ -198,8 +198,7 @@ function main () {
         CONFIGURATION_REMOTE=":$_REMOTE_FOLDER_CONFIGURATION" # where will we save them on the remote
         CONFIGURATION_DESTINATION="$CONFIGURATION_LOCAL$CONFIGURATION_REMOTE"
         FILES+=("$CONFIGURATION_DESTINATION")
-        # generate_backup_file
-        echo "-> generate_backup_file"
+        generate_backup_file
     fi
 
     # ======== UPLOAD ========
