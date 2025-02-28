@@ -1,3 +1,12 @@
+## [0.7.1](https://github.com/phonevox/pbackup/compare/v0.7.0...v0.7.1) (2025-02-28)
+
+
+### Bug Fixes
+
+* uncomment backup generation on issabelscript ([a3ab337](https://github.com/phonevox/pbackup/commit/a3ab33799730199fbc171394dfd65691427cdc0e))
+
+
+
 # [0.7.0](https://github.com/phonevox/pbackup/compare/v0.6.6...v0.7.0) (2025-02-28)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * remove pvox components from base components ([5c44c80](https://github.com/phonevox/pbackup/commit/5c44c807cfdd83e79a62c0b458eb945b193d0c72))
-
-
-
-## [0.6.3](https://github.com/phonevox/pbackup/compare/v0.6.2...v0.6.3) (2025-02-11)
-
-
-### Bug Fixes
-
-* validate pvox backupengine for issabel script ([962acdb](https://github.com/phonevox/pbackup/commit/962acdb8d73fb3b925a80eeef24f5ac11b87adc4))
 
 
 
