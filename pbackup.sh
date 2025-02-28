@@ -36,6 +36,8 @@ add_flag "cf" "conf-file" "Path to a file containing multiple paths to upload. O
 add_flag "f" "files" "Path(s) to file(s) or folder(s) to be uploaded to remote. Separate multiple files by comma (,)\n- The paths can be formatted as \"<local>[:<remote>]\". If '-t|--to' destination is provided, \"[:<remote>]\" will be suffixed to the \"-t|--to\" flag's value.\n- Example: -t \"mega:/folder\" on \"./cheese.txt:/test\" will be saved to \"mega:/folder/test/cheese.txt\"" string
 add_flag "t" "to" "rclone's remote name. Optionally can also set to where, on the remote, your files will be moved to.\n- Example: -t|--to \"<remote_name>[:<path>]\"" string
 add_flag "config:HIDDEN" "config" "Alias for \"rclone config\"" bool
+add_flag "delete:HIDDEN" "delete" "Alias for \"rclone delete\"" string
+add_flag "nfs:HIDDEN" "no-failsafe" "Run unsafe commands, even if they trigger a failsafe mechanism." bool
 add_flag "list:HIDDEN" "list" "Alias for \"rclone listremotes\"" bool
 add_flag "install:HIDDEN" "install" "Install this script to your path, so you can call it from anywhere with '$(echo $SCRIPT_NAME | cut -d '.' -f 1) <flags>'" bool
 
@@ -54,10 +56,12 @@ parse_flags $@
 # === POST-PARSE VARIABLES ===
 
 _DEBUG="false"
+_FAILSAFE="true"
 _DAYS_AGO=0 # today
 hasFlag "y" && _DAYS_AGO=1
 hasFlag "da" && _DAYS_AGO=$(getFlag "da")
 hasFlag "V" && _DEBUG="true"
+hasFlag "nfs" && _FAILSAFE="false"
 
 # === UTILITARY FUNCTIONS ===
 
@@ -324,6 +328,17 @@ function main() {
     if hasFlag "list"; then
         log "Listing remotes..."
         rclone listremotes
+        exit 0
+    fi
+
+    if hasFlag "delete"; then
+        REMOTE="$(getFlag "delete")"
+        log "Deleting remote... \"$REMOTE\""
+        if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
+            log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with --no-failsafe")"
+            exit 1
+        fi
+        rclone delete "$REMOTE"
         exit 0
     fi
 
