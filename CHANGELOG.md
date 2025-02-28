@@ -1,3 +1,19 @@
+# [0.7.0](https://github.com/phonevox/pbackup/compare/v0.6.6...v0.7.0) (2025-02-28)
+
+
+### Bug Fixes
+
+* rmdirs on delete ([d229ccd](https://github.com/phonevox/pbackup/commit/d229ccd70f01a3409286b05f7393534f5956d362))
+* write log in currdir if its not writable on destination ([787eb66](https://github.com/phonevox/pbackup/commit/787eb66e54665b15a9ce333b7df6ad084f21dd9e))
+
+
+### Features
+
+* flag for delete, failsafe on delete, nofailsafe flag ([c2c41ad](https://github.com/phonevox/pbackup/commit/c2c41ad83cd1bddf6b4c2942680bd4e81c47b92c))
+* new issabel backup script, with rotate file ([3be7d4e](https://github.com/phonevox/pbackup/commit/3be7d4ef05772316d357598d48b30693a745ba88))
+
+
+
 ## [0.6.6](https://github.com/phonevox/pbackup/compare/v0.6.5...v0.6.6) (2025-02-25)
 
 
@@ -31,15 +47,6 @@
 ### Bug Fixes
 
 * validate pvox backupengine for issabel script ([962acdb](https://github.com/phonevox/pbackup/commit/962acdb8d73fb3b925a80eeef24f5ac11b87adc4))
-
-
-
-## [0.6.2](https://github.com/phonevox/pbackup/compare/v0.6.1...v0.6.2) (2025-02-11)
-
-
-### Bug Fixes
-
-* remote destination interpret date on every new file ([1275a5a](https://github.com/phonevox/pbackup/commit/1275a5a9f3afd0dd997dd72861ee9d5802460ddb))
 
 
 
