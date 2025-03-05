@@ -36,8 +36,8 @@ add_flag "t" "remote" "Remote destination to upload to" string
 add_flag "rec:HIDDEN" "recordings" "Backup recordings" bool
 add_flag "config:HIDDEN" "configuration" "Backup configuration" bool
 
-set_description "IssabelPBX Backup script for pbackup\nExample usage: sudo bash $FULL_SCRIPT_PATH -r -c -rt 7 -t mega-bkp:/issabel-pbackup"
-set_usage "sudo bash $FULL_SCRIPT_PATH [-r] [-c] [-rt <days>] -t <remote> "
+set_description "IssabelPBX Backup script for pbackup\nExample usage: sudo bash $FULL_SCRIPT_PATH --recordings --configuration -r 7 -t mega-bkp:/issabel-pbackup"
+set_usage "sudo bash $FULL_SCRIPT_PATH [--recordings] [--configuration] [-r <days>] -t <remote> "
 parse_flags $@
 
 # === FUNCS ===
