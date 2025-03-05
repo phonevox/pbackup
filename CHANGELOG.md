@@ -1,3 +1,12 @@
+## [0.7.2](https://github.com/phonevox/pbackup/compare/v0.7.1...v0.7.2) (2025-03-05)
+
+
+### Bug Fixes
+
+* wrong flags in description/usage ([a1b495d](https://github.com/phonevox/pbackup/commit/a1b495d4b2b2c2b700692d5734380440815494c1))
+
+
+
 ## [0.7.1](https://github.com/phonevox/pbackup/compare/v0.7.0...v0.7.1) (2025-02-28)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * change log location to /var/log/pbackup.log ([3bfaed0](https://github.com/phonevox/pbackup/commit/3bfaed060b81c31f95b4df5d6c366f57b9401a78))
-
-
-
-## [0.6.4](https://github.com/phonevox/pbackup/compare/v0.6.3...v0.6.4) (2025-02-11)
-
-
-### Bug Fixes
-
-* remove pvox components from base components ([5c44c80](https://github.com/phonevox/pbackup/commit/5c44c807cfdd83e79a62c0b458eb945b193d0c72))
 
 
 
