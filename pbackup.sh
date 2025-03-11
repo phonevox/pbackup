@@ -232,6 +232,52 @@ function version_is_greater() {
 
 # === RUNTIME ===
 
+function rclone_copy() {
+    local SOURCE="$1"
+    local DESTINATION="$2"
+    local MAX_RETRIES=3  # max retries
+    local RETRY_DELAY=30 # seconds before retrying
+
+    # Definir o comando Rclone com as flags desejadas
+    local RCLONE_CMD="rclone copy \"$SOURCE\" \"$DESTINATION\" --transfers=8 --checkers=16 --buffer-size=64M --multi-thread-streams=4 --retries=5 --low-level-retries=10 --fast-list --progress"
+
+    if hasFlag "d"; then
+        log "$(colorir "amarelo" "[DRY]") $RCLONE_CMD"
+        return
+    fi
+
+    local attempt=1
+    while [ $attempt -le $MAX_RETRIES ]; do
+        log "$(colorir "azul" "Attempt $attempt of $MAX_RETRIES: Copying $SOURCE -> $DESTINATION")"
+
+        # Executa o comando armazenado na variável
+        local RCLONE_OUTPUT=$(eval "$RCLONE_CMD" 2>&1)
+        local RCLONE_EXITCODE=$?
+
+        while IFS= read -r line; do
+            log "(rclone) $line"
+        done <<< "$RCLONE_OUTPUT"
+
+        if [ $RCLONE_EXITCODE -eq 0 ]; then
+            log "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES)")"
+            return 0
+        else
+            log "$(colorir "amarelo" "Upload failed: $SOURCE -> $DESTINATION (Code $RCLONE_EXITCODE) (Attempt $attempt/$MAX_RETRIES)")"
+            if [ $attempt -lt $MAX_RETRIES ]; then
+                log "$(colorir "amarelo" "Waiting $RETRY_DELAY seconds before reattempting...")"
+                sleep $RETRY_DELAY
+            fi
+        fi
+
+        ((attempt++))
+    done
+
+    log "$(colorir "vermelho" "ERROR: All $MAX_RETRIES failed for: $SOURCE -> $DESTINATION")"
+    return 1
+}
+
+
+
 function parse_date() {
     local INPUT="$1"
     local CURRENT_DATE=$(date +%Y-%m-%d %H-%M-%s)  # Mantemos um formato padrão AAAA-MM-DD
@@ -462,49 +508,11 @@ function main() {
 
         if $(test -d "$SOURCE_PATH"); then
             log "- '$(colorir "azul" "$SOURCE_PATH/* (directory)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
-
-            if hasFlag "d"; then
-                log "$(colorir "amarelo" "[DRY]") rclone copy \"$SOURCE_PATH\" \"$FINAL_DESTINATION\" --progress"
-            else
-                # Executa o rclone e captura a saída
-                output=$(rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress 2>&1)
-                rclone_exit_code=$?
-
-                # Loga a saída do rclone
-                while IFS= read -r line; do
-                    log "(rclone) $line"
-                done <<< "$output"
-
-                # Verifica se o rclone foi bem-sucedido
-                if [ $rclone_exit_code -eq 0 ]; then
-                    log "Upload successful: $SOURCE_PATH"
-                else
-                    log "$(colorir "vermelho" "Failed to upload: $SOURCE_PATH!")"
-                fi
-            fi
+            rclone_copy "$SOURCE_PATH" "$FINAL_DESTINATION"
 
         elif $(test -f "$SOURCE_PATH"); then
             log "- '$(colorir "azul" "$SOURCE_PATH (file)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
-
-            if hasFlag "d"; then
-                log "$(colorir "amarelo" "[DRY]") rclone copy \"$SOURCE_PATH\" \"$FINAL_DESTINATION\" --progress"
-            else
-                # Executa o rclone e captura a saída
-                output=$(rclone copy "$SOURCE_PATH" "$FINAL_DESTINATION" --progress 2>&1)
-                rclone_exit_code=$?
-
-                # Loga a saída do rclone
-                while IFS= read -r line; do
-                    log "(rclone) $line"
-                done <<< "$output"
-
-                # Verifica se o rclone foi bem-sucedido
-                if [ $rclone_exit_code -eq 0 ]; then
-                    log "Upload successful: $SOURCE_PATH"
-                else
-                    log "$(colorir "vermelho" "Failed to upload: $SOURCE_PATH!")"
-                fi
-            fi
+            rclone_copy "$SOURCE_PATH" "$FINAL_DESTINATION"
 
         else
             log "- '$(colorir "vermelho" "x '$SOURCE_PATH' (unknown)")' > '$(colorir "ciano" "$FINAL_DESTINATION/")'"
