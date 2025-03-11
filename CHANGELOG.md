@@ -1,3 +1,12 @@
+## [0.7.3](https://github.com/phonevox/pbackup/compare/v0.7.2...v0.7.3) (2025-03-11)
+
+
+### Bug Fixes
+
+* reattempt on fail ([085d9cb](https://github.com/phonevox/pbackup/commit/085d9cb5d7946e2a7e332468d97192a6bcbd5a8d))
+
+
+
 ## [0.7.2](https://github.com/phonevox/pbackup/compare/v0.7.1...v0.7.2) (2025-03-05)
 
 
@@ -38,15 +47,6 @@
 ### Bug Fixes
 
 * (temporary) better rclone output ([0ed21f8](https://github.com/phonevox/pbackup/commit/0ed21f8eb3cca56e0b910d817adfcac6cb389d6a))
-
-
-
-## [0.6.5](https://github.com/phonevox/pbackup/compare/v0.6.4...v0.6.5) (2025-02-12)
-
-
-### Bug Fixes
-
-* change log location to /var/log/pbackup.log ([3bfaed0](https://github.com/phonevox/pbackup/commit/3bfaed060b81c31f95b4df5d6c366f57b9401a78))
 
 
 
