@@ -12,10 +12,9 @@ CURRDIR="$(dirname "$FULL_SCRIPT_PATH")"
 SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
-LOG_FILE_PATH="/var/log"
-[ -w "$LOG_FILE_PATH" ] || LOG_FILE_PATH="$CURRDIR" # if not writable, use current directory
-LOG_FILE_NAME="pbackup.log"
-LOG_FILE="$LOG_FILE_PATH/$LOG_FILE_NAME-$(date '+%Y-%m-%d').log"
+_LOG_FILE="/var/log/pbackup.log"
+_LOG_LEVEL=3 # 0:test, 1:trace, 2:debug, 3:info, 4:warn, 5:error, 6:fatal
+_LOG_ROTATE_PERIOD=7
 
 # Versioning 
 REPO_OWNER="phonevox"
@@ -63,31 +62,13 @@ _FAILSAFE="true"
 _DAYS_AGO=0 # today
 hasFlag "y" && _DAYS_AGO=1
 hasFlag "da" && _DAYS_AGO=$(getFlag "da")
-hasFlag "V" && _DEBUG="true"
-hasFlag "VV" && _VDEBUG="true"
+hasFlag "V" && _LOG_LEVEL=2
+hasFlag "VV" && _LOG_LEVEL=0
 hasFlag "nfs" && _FAILSAFE="false"
 
 # === UTILITARY FUNCTIONS ===
 
-# logging
-log () {
-    local CURRTIME=$(date '+%Y-%m-%d %H:%M:%S')
-    if ! [ -f "$LOG_FILE" ]; then
-        echo -e "[$CURRTIME] $SCRIPT_NAME> Iniciando novo logfile" > "$LOG_FILE"
-    fi
-
-    if [ -z $2 ]; then
-        local muted=false
-    else
-        local muted=true
-    fi
-
-    echo -e "[$CURRTIME] $SCRIPT_NAME> $1" >> "$LOG_FILE"
-    if ! $muted; then
-        echo -e "[$CURRTIME] $SCRIPT_NAME> $1"
-    fi
-}
-log "=== STARTING - ARGUMENTS: $* ===" muted
+log.debug "=== STARTING - ARGUMENTS: $* ===" muted
 
 # "safe-run", abstraction to "run" function, so it can work with our dry mode
 # Usage: same as run
@@ -246,13 +227,13 @@ function rclone_copy() {
     local RCLONE_CMD="rclone copy $SOURCE $DESTINATION $DEBUG_FLAG --transfers=8 --checkers=16 --buffer-size=64M --multi-thread-streams=4 --retries=5 --low-level-retries=10 --fast-list --progress"
 
     if hasFlag "d"; then
-        log "$(colorir "amarelo" "[DRY]") $RCLONE_CMD"
+        log.test "$(colorir "amarelo" "[DRY]") $RCLONE_CMD"
         return
     fi
 
     local attempt=1
     while [ $attempt -le $MAX_RETRIES ]; do
-        log "$(colorir "azul" "Attempt $attempt of $MAX_RETRIES: Copying $SOURCE -> $DESTINATION")"
+        log.info "$(colorir "azul" "Attempt $attempt of $MAX_RETRIES: Copying $SOURCE -> $DESTINATION")"
 
         local line_count=0
         local animation_step=0
@@ -262,7 +243,7 @@ function rclone_copy() {
             line_count=$((line_count+1))
             if $_DEBUG; then
                 # rclone output itself
-                log "(rclone) $line"
+                log.debug "(rclone) $line"
             else
                 # user-simplified progress bar
                 if [ $((line_count % 10)) -eq 0 ]; then
@@ -287,12 +268,12 @@ function rclone_copy() {
         # log "$(colorir "magenta" "<!> Exit code: $RCLONE_EXITCODE <!>")"
 
         if [ $RCLONE_EXITCODE -eq 0 ]; then
-            log "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Exit code: $RCLONE_EXITCODE)")"
+            log.info "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Exit code: $RCLONE_EXITCODE)")"
             return 0
         else
-            log "$(colorir "amarelo" "Upload failed: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Exit code: $RCLONE_EXITCODE)")"
+            log.info "$(colorir "amarelo" "Upload failed: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Exit code: $RCLONE_EXITCODE)")"
             if [ $attempt -lt $MAX_RETRIES ]; then
-                log "$(colorir "amarelo" "Waiting $RETRY_DELAY seconds before reattempting...")"
+                log.info "$(colorir "amarelo" "Waiting $RETRY_DELAY seconds before reattempting...")"
                 sleep $RETRY_DELAY
             fi
         fi
@@ -300,7 +281,7 @@ function rclone_copy() {
         ((attempt++))
     done
 
-    log "$(colorir "vermelho" "ERROR: All $MAX_RETRIES failed for: $SOURCE -> $DESTINATION")"
+    log.error "$(colorir "vermelho" "ERROR: All $MAX_RETRIES failed for: $SOURCE -> $DESTINATION")"
     return 1
 }
 
@@ -377,41 +358,41 @@ function main() {
     if hasFlag "fu"; then check_for_updates "true"; fi # force
 
     # check rclone is installed
-    $_DEBUG && log "Checking for rclone..."
+    log.debug "Checking for rclone..."
     if ! $(rclone --version >/dev/null 2>&1); then 
-        $_DEBUG && log "- Installing rclone"
+        log.info "- Installing rclone"
 
         # guarantee user is sudo
         if ! $(sudo -v >/dev/null 2>&1); then
-            log "ERROR: Failed to install rclone: you need to be root to install rclone"
+            log.fatal "ERROR: Failed to install rclone: you need to be root to install rclone"
             exit 1
         fi
 
         srun "sudo -v ; curl https://rclone.org/install.sh | sudo bash"
 
-        $_DEBUG && log "- SUCCESS! rclone was installed."
+        log.info "- SUCCESS! rclone was installed."
     else
-        $_DEBUG && log "- OK"
+        log.trace "- OK"
     fi
 
     if hasFlag "config"; then
-        $_DEBUG && log "CONFIG ALIAS WAS CALLED! Opening rclone config..."
+        log.info "CONFIG ALIAS WAS CALLED! Opening rclone config..."
         rclone config
         exit 0
     fi
 
     if hasFlag "list"; then
-        $_DEBUG && log "Listing remotes..."
+        log.info "Listing remotes..."
         rclone listremotes
         exit 0
     fi
 
     if hasFlag "delete"; then
         REMOTE="$(getFlag "delete")"
-        $_DEBUG && log "Deleting remote... \"$REMOTE\""
+        log.info "Deleting remote... \"$REMOTE\""
 
         if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
-            log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
+            log.fatal "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
             exit 1
         fi
 
@@ -422,14 +403,14 @@ function main() {
 
         # Loga a saída do rclone
         while IFS= read -r line; do
-            log "(rclone) $line"
+            log.trace "(rclone) $line"
         done <<< "$output"
 
         # Verifica se o rclone foi bem-sucedido
         if [ $rclone_exit_code -eq 0 ]; then
-            log "Delete successful: $REMOTE"
+            log.info "Delete successful: $REMOTE"
         else
-            log "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
+            log.warning "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
         fi
 
         exit $rclone_exit_code
@@ -437,7 +418,7 @@ function main() {
 
     if hasFlag "purge"; then
         REMOTE="$(getFlag "purge")"
-        $_DEBUG && log "Purging remote... \"$REMOTE\""
+        log.info "Purging remote... \"$REMOTE\""
 
         if [[ "$REMOTE" == *":" || "$REMOTE" == *":/" ]] && [[ "$_FAILSAFE" == "true" ]]; then
             log "$(colorir "vermelho" "FAILSAFE: You tried to remove your entire remote. If this is right, run again with '--no-failsafe'")"
@@ -445,20 +426,20 @@ function main() {
         fi
 
         # Executa o rclone purge e captura a saída
-        echo "test: rclone purge \"$REMOTE\" --rmdirs"
+        log.test "test: rclone purge \"$REMOTE\" --rmdirs"
         output=$(rclone purge "$REMOTE" --rmdirs 2>&1)
         rclone_exit_code=$?
 
         # Loga a saída do rclone
         while IFS= read -r line; do
-            log "(rclone) $line"
+            log.debug "(rclone) $line"
         done <<< "$output"
 
         # Verifica se o rclone foi bem-sucedido
         if [ $rclone_exit_code -eq 0 ]; then
-            log "Purge successful: $REMOTE"
+            log.info "Purge successful: $REMOTE"
         else
-            log "$(colorir "vermelho" "Failed to purge: $REMOTE!")"
+            log.error "$(colorir "vermelho" "Failed to purge: $REMOTE!")"
         fi
 
         exit $rclone_exit_code
@@ -466,57 +447,57 @@ function main() {
 
     # check remote exists
     REMOTE="$(getFlag "t" | cut -d ':' -f 1)"
-    $_DEBUG && log "Checking rclone remote '$REMOTE'..."
+    log.debug "Checking rclone remote '$REMOTE'..."
     if ! $(rclone listremotes | grep -q "^$REMOTE:$"); then
-        log "ERROR: Remote '$REMOTE' does not exist. Please configure it on rclone manually (through 'rclone config')"
+        log.fatal "ERROR: Remote '$REMOTE' does not exist. Please configure it on rclone manually (through 'rclone config')"
         exit 1
     else
-        $_DEBUG && log "- OK"
+        log.trace "- OK"
     fi
     
     # get files user wants to upload
-    $_DEBUG && log "Checking target files..."
+    log.debug "Checking target files..."
     PATHS_TO_UPLOAD=()
     INVALID_PATHS=()
 
     if hasFlag "f"; then
-        $_DEBUG && log "- COMMAND LINE"
+        log.trace "- COMMAND LINE"
         for path in $(getFlag "f" | tr ',' ' '); do
             path=$(parse_date "$path")
             source_path=$(echo "$path" | cut -d ':' -f 1)
             if ! $(test -e "$source_path"); then
-                $_DEBUG && log " $(colorir "vermelho" "x") invalid: $source_path"
+                log.debug " $(colorir "vermelho" "x") invalid: $source_path"
                 INVALID_PATHS+=("$path")
             else
                 PATHS_TO_UPLOAD+=("$path")
-                $_DEBUG && log " $(colorir "verde" "+") added: $source_path"
+                log.debug " $(colorir "verde" "+") added: $source_path"
             fi
         done
     fi
 
     if hasFlag "cf"; then
-        $_DEBUG && log "- CONFIGURATION FILE"
+        log.trace "- CONFIGURATION FILE"
         for path in $(cat $(getFlag "cf")); do
             path=$(parse_date "$path")
             source_path=$(echo "$path" | cut -d ':' -f 1)
             if ! $(test -e "$source_path"); then
-                $_DEBUG && log " $(colorir "vermelho" "x") invalid: $source_path"
+                log.debug " $(colorir "vermelho" "x") invalid: $source_path"
                 INVALID_PATHS+=("$path")
             else
                 PATHS_TO_UPLOAD+=("$path")
-                $_DEBUG && log " $(colorir "verde" "+") added: $source_path"
+                log.debug " $(colorir "verde" "+") added: $source_path"
             fi
         done
     fi
 
     if [ ! -z "$INVALID_PATHS" ]; then
-        log "WARNING: The following paths do not exist and will be ignored:"
+        log.warning "WARNING: The following paths do not exist and will be ignored:"
         for path in "${INVALID_PATHS[@]}"; do
-            log "- $(colorir "amarelo" "$(echo "$path" | cut -d ':' -f 1)")"
+            log.warning "- $(colorir "amarelo" "$(echo "$path" | cut -d ':' -f 1)")"
         done
     fi
 
-    $_DEBUG && log "Starting upload..."
+    log.debug "Starting upload..."
     REMOTE_DESTINATION="$(getFlag "t")"; if [[ "$REMOTE_DESTINATION" =~ ^[^:]+$ ]]; then REMOTE_DESTINATION="$REMOTE_DESTINATION:/"; fi
     REMOTE_DESTINATION=$(parse_date "$REMOTE_DESTINATION")
     for path in "${PATHS_TO_UPLOAD[@]}"; do
@@ -528,26 +509,26 @@ function main() {
             FINAL_DESTINATION="$FINAL_DESTINATION/$(basename "$SOURCE_PATH")"
         fi
 
-        $_VDEBUG && log "              PATH : $path"
-        $_VDEBUG && log "REMOTE DESTINATION : $REMOTE_DESTINATION"
-        $_VDEBUG && log "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
-        $_VDEBUG && log "       SOURCE_PATH : (what?) : $SOURCE_PATH"
-        $_VDEBUG && log " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
+        log.trace "              PATH : $path"
+        log.trace "REMOTE DESTINATION : $REMOTE_DESTINATION"
+        log.trace "CUSTOM DESTINATION : $CUSTOM_DESTINATION"
+        log.trace "       SOURCE_PATH : (what?) : $SOURCE_PATH"
+        log.trace " FINAL DESTINATION :   (to?) : $FINAL_DESTINATION"
 
         if $(test -d "$SOURCE_PATH"); then
-            $_DEBUG && log "- '$(colorir "azul" "$SOURCE_PATH/* (directory)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
+            log.debug "- '$(colorir "azul" "$SOURCE_PATH/* (directory)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
             rclone_copy "$SOURCE_PATH" "$FINAL_DESTINATION"
 
         elif $(test -f "$SOURCE_PATH"); then
-            $_DEBUG && log "- '$(colorir "azul" "$SOURCE_PATH (file)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
+            log.debug "- '$(colorir "azul" "$SOURCE_PATH (file)")' > '$(colorir "ciano" "$FINAL_DESTINATION")'"
             rclone_copy "$SOURCE_PATH" "$FINAL_DESTINATION"
 
         else
-            $_DEBUG && log "- '$(colorir "vermelho" "x '$SOURCE_PATH' (unknown)")' > '$(colorir "ciano" "$FINAL_DESTINATION/")'"
-            log "ERROR: Unknown type! '$SOURCE_PATH'"
+            log.error "- '$(colorir "vermelho" "x '$SOURCE_PATH' (unknown)")' > '$(colorir "ciano" "$FINAL_DESTINATION/")'"
+            log.error "ERROR: Unknown type! '$SOURCE_PATH'"
         fi
     done
-    $_DEBUG && log "Upload finished."
+    log.info "Upload finished."
 }
 
 main

@@ -1,42 +1,65 @@
 #!/bin/bash
 
+# safeguard: check if important constants are set
+if [[ -z "$CURRDIR" ]]; then
+    echo -e "ERROR: uzful.sh: Please set CURRDIR in your main script.\n" >&2
+    echo 'CURRDIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"' >&2
+    exit 1
+fi
+
+# to check for extra modules like colors and logging: where is uzful.sh?
+_UZFUL_DIRNAME="$(dirname $(readlink -f "${BASH_SOURCE[0]}"))"
+
+# import coloring, else do colorless
+if [[ -f "$_UZFUL_DIRNAME/colors.sh" ]]; then
+    source "$_UZFUL_DIRNAME/colors.sh"
+else
+    function colorir() {
+        local COLOR="$1"
+        local TEXT="$2"
+        echo "$2"
+    }
+fi
+
+# import log
+if [[ -f "$_UZFUL_DIRNAME/logging.sh" && ! -z "$_LOG_FILE" ]]; then
+    source "$_UZFUL_DIRNAME/logging.sh"
+else
+    echo "--- $(colorir "vermelho" "CRITICAL WARNING: YOU DO NOT HAVE THE LOGGING MODULE ENABLED. FAKE LOGGING WILL BE USED INSTEAD") ---"
+    echo -e "$(colorir "amarelo" "Make sure you have the logging module in the same folder as uzful.sh, and that you have set up _LOG_FILE in your main script.\n_LOG_FILE should represent the complete path to log file, example: /var/log/myscript.log\nBecause the fallback is in place, the log level won't be respected!")"
+    echo "--- $(colorir "vermelho" "CRITICAL WARNING: YOU DO NOT HAVE THE LOGGING MODULE ENABLED. FAKE LOGGING WILL BE USED INSTEAD") ---"
+    function log() {
+        # if argument 2 is not present, then echo the message ($1)
+        if [[ -z "$2" ]]; then
+            echo "$1"
+        fi
+    }
+    # im so sorry for what you're about to see
+    function log.test () { 
+        log "$1" "$2"
+    }
+    function log.trace () { 
+        log "$1" "$2"
+    }
+    function log.debug() { 
+        log "$1" "$2"
+    }
+    function log.info() { 
+        log "$1" "$2"
+    }
+    function log.warn() { 
+        log "$1" "$2"
+    }
+    function log.error() { 
+        log "$1" "$2"
+    }
+    function log.fatal() { 
+        log "$1" "$2"
+    }
+fi
+
 # --- useful constants
-declare -A COLORS_ARRAY
-COLORS_ARRAY=(
-    # Cores básicas
-    [preto]="0;30"
-    [vermelho]="0;31"
-    [verde]="0;32"
-    [amarelo]="0;33"
-    [azul]="0;34"
-    [magenta]="0;35"
-    [ciano]="0;36"
-    [branco]="0;37"
 
-    # Cores claras
-    [preto_claro]="1;30"
-    [vermelho_claro]="1;31"
-    [verde_claro]="1;32"
-    [amarelo_claro]="1;33"
-    [azul_claro]="1;34"
-    [magenta_claro]="1;35"
-    [ciano_claro]="1;36"
-    [branco_claro]="1;37"
-
-    # Cores 256 (adicionais)
-    [laranja]="38;5;208"
-    [rosa]="38;5;206"
-    [azul_celeste]="38;5;45"
-    [verde_lima]="38;5;118"
-    [lavanda]="38;5;183"
-    [violeta]="38;5;135"
-    [caramelo]="38;5;130"
-    [dourado]="38;5;220"
-    [turquesa]="38;5;51"
-    [cinza]="38;5;244"
-    [cinza_claro]="38;5;250"
-    [marrom]="38;5;94"
-)
 # --- useful functions
 
 # returns the current operational system
@@ -81,92 +104,6 @@ function determine_cloud_provider() {
 
     echo $PROBABLE_PROVIDER
 }
-
-
-# color your text using subshells
-# this needs the COLORS_ARRAY array, declared outside this function
-# Usage: echo "esse texto está sem cor, mas $(colorir "verde" "esse texto aqui está com cor") "
-function colorir() {
-    local cor=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    local texto=$2
-    local string='${COLORS_ARRAY['"\"$cor\""']}'
-    eval "local cor_ansi=$string" >/dev/null 2>&1
-    local cor_reset="\e[0m"
-
-    if [[ -z "$cor_ansi" ]]; then
-        cor_ansi=${COLORS_ARRAY["branco"]}  # defaults to white if invalid
-    fi
-
-    # print with selected color
-    echo -e "\e[${cor_ansi}m${texto}${cor_reset}"
-}
-
-
-# echo-back the first argument in every possible color
-# so you can search for a cool color you want to use
-# Usage: colortest "batata frita"
-function colortest() {
-    local ORDER=(
-        # tons neutros
-        "preto"
-        "preto_claro"
-        "cinza"
-        "cinza_claro"
-        "branco"
-        "branco_claro"
-        
-        # tons de verde
-        # "\n"
-        "verde"
-        "verde_claro"
-        "verde_lima"
-        
-        # tons azuis
-        # "\n"
-        "azul"
-        "azul_claro"
-        "azul_celeste"
-        "turquesa"
-
-        # proibido
-        "ciano"
-        "ciano_claro"
-        
-        # tons amarelados
-        # "\n"
-        "amarelo"
-        "amarelo_claro"
-        "laranja"
-        "caramelo"
-        
-        # tons vermelhos
-        # "\n"
-        "vermelho"
-        "vermelho_claro"
-        
-        # tons rosa/roxos
-        # "\n"
-        "magenta"
-        "magenta_claro"
-        "violeta"
-        "rosa"
-        "lavanda"
-    )
-    local texto=$1
-    local cor_reset="\e[0m"
-    echo "inside colortest"
-
-    # Loop para aplicar todas as cores do array "COLORS_ARRAY" ao texto
-    for cor in "${ORDER[@]}"; do
-        if [[ "$cor" == "\\n" ]]; then
-            echo ""
-            continue
-        fi
-        local cor_ansi="${COLORS_ARRAY[$cor]}"
-        echo -e "\e[${cor_ansi}m${texto} (${cor})${cor_reset}"
-    done
-}
-
 
 # Executes commands on system, in a secure way.
 # This demands "colorir" function for aesthetics.
@@ -237,18 +174,6 @@ function run() {
     echo -e "> command:[$(colorir "$CODE_FAILED_COLOR" "$COMMAND")], exit_code:$(colorir "$CODE_FAILED_COLOR+" "$EXIT_CODE")"
     echo -e "O exit-code do comando [$COMMAND] foi diferente de 0. Encerrando o SCRIPT por segurança!"
     exit 1
-}
-
-
-# echo and logs to a file
-# file must be configured previously
-# Usage: log "<message>"
-function log() {
-    local MENSAGEM=$1
-    local LOG_DESTINATION="${settings[LOG_PATH]}/-$(date +%Y%m%d).log"
-    local LOG_TIMESTAMP="$(date +%Y/%m/%d\ %H:%M:%S.%N)"
-
-    echo -e "[$LOG_TIMESTAMP] $1" | tee -a $LOG_DESTINATION
 }
 
 
