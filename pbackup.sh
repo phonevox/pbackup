@@ -239,7 +239,7 @@ function rclone_copy() {
     local RETRY_DELAY=30 # seconds before retrying
 
     # Definir o comando Rclone com as flags desejadas
-    local RCLONE_CMD="rclone copy \"$SOURCE\" \"$DESTINATION\" --transfers=8 --checkers=16 --buffer-size=64M --multi-thread-streams=4 --retries=5 --low-level-retries=10 --fast-list --progress"
+    local RCLONE_CMD="rclone copy $SOURCE $DESTINATION --transfers=8 --checkers=16 --buffer-size=64M --multi-thread-streams=4 --retries=5 --low-level-retries=10 --fast-list --progress"
 
     if hasFlag "d"; then
         log "$(colorir "amarelo" "[DRY]") $RCLONE_CMD"
@@ -250,19 +250,16 @@ function rclone_copy() {
     while [ $attempt -le $MAX_RETRIES ]; do
         log "$(colorir "azul" "Attempt $attempt of $MAX_RETRIES: Copying $SOURCE -> $DESTINATION")"
 
-        # Executa o comando armazenado na variável
-        local RCLONE_OUTPUT=$(eval "$RCLONE_CMD" 2>&1)
-        local RCLONE_EXITCODE=$?
+        $RCLONE_CMD 2>&1 | while IFS= read -r line; do log "(rclone) $line"; done
+        local RCLONE_EXITCODE=${PIPESTATUS[0]}
 
-        while IFS= read -r line; do
-            log "(rclone) $line"
-        done <<< "$RCLONE_OUTPUT"
+        log "$(colorir "magenta" "<!> Exit code: $RCLONE_EXITCODE <!>")"
 
         if [ $RCLONE_EXITCODE -eq 0 ]; then
-            log "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES)")"
+            log "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Code $RCLONE_EXITCODE)")"
             return 0
         else
-            log "$(colorir "amarelo" "Upload failed: $SOURCE -> $DESTINATION (Code $RCLONE_EXITCODE) (Attempt $attempt/$MAX_RETRIES)")"
+            log "$(colorir "amarelo" "Upload failed: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Code $RCLONE_EXITCODE)")"
             if [ $attempt -lt $MAX_RETRIES ]; then
                 log "$(colorir "amarelo" "Waiting $RETRY_DELAY seconds before reattempting...")"
                 sleep $RETRY_DELAY
@@ -280,7 +277,7 @@ function rclone_copy() {
 
 function parse_date() {
     local INPUT="$1"
-    local CURRENT_DATE=$(date +%Y-%m-%d %H-%M-%s)  # Mantemos um formato padrão AAAA-MM-DD
+    local CURRENT_DATE=$(date +"%Y-%m-%d %H-%M-%s")  # Mantemos um formato padrão AAAA-MM-DD
 
     # Tratamento de %DAY%
     if [[ "$INPUT" =~ %DAY% ]]; then
