@@ -8,10 +8,9 @@ CURRDIR="$(dirname "$FULL_SCRIPT_PATH")"
 SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
-LOG_FILE_PATH="/var/log"
-[ -w "$LOG_FILE_PATH" ] || LOG_FILE_PATH="$(dirname "$CURRDIR")" # if not writable, use current directory
-LOG_FILE_NAME="pbackup.log"
-LOG_FILE="$LOG_FILE_PATH/$LOG_FILE_NAME-$(date '+%Y-%m-%d').log"
+_LOG_FILE="/var/log/pbackup.log"
+_LOG_LEVEL=3 # 0:test, 1:trace, 2:debug, 3:info, 4:warn, 5:error, 6:fatal
+_LOG_ROTATE_PERIOD=7
 
 # Magnus Backup
 FILES=""
