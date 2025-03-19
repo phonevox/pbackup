@@ -1,3 +1,12 @@
+## [0.8.2](https://github.com/phonevox/pbackup/compare/v0.8.1...v0.8.2) (2025-03-19)
+
+
+### Bug Fixes
+
+* script/issabel.sh using wrong logs ([48e94ba](https://github.com/phonevox/pbackup/commit/48e94baacb54072557de6ea47ef3aad7e65bf041))
+
+
+
 ## [0.8.1](https://github.com/phonevox/pbackup/compare/v0.8.0...v0.8.1) (2025-03-19)
 
 
@@ -37,15 +46,6 @@
 ### Bug Fixes
 
 * wrong flags in description/usage ([a1b495d](https://github.com/phonevox/pbackup/commit/a1b495d4b2b2c2b700692d5734380440815494c1))
-
-
-
-## [0.7.1](https://github.com/phonevox/pbackup/compare/v0.7.0...v0.7.1) (2025-02-28)
-
-
-### Bug Fixes
-
-* uncomment backup generation on issabelscript ([a3ab337](https://github.com/phonevox/pbackup/commit/a3ab33799730199fbc171394dfd65691427cdc0e))
 
 
 
