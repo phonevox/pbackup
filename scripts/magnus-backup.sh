@@ -17,24 +17,6 @@ FILES=""
 
 # === FUNCS ===
 
-function log () {
-    local CURRTIME=$(date '+%Y-%m-%d %H:%M:%S')
-    if ! [ -f "$LOG_FILE" ]; then
-        echo -e "[$CURRTIME] $SCRIPT_NAME> Iniciando novo logfile" > "$LOG_FILE"
-    fi
-
-    if [ -z $2 ]; then
-        local muted=false
-    else 
-        local muted=true
-    fi
-
-    echo -e "[$CURRTIME] $SCRIPT_NAME> $1" >> "$LOG_FILE"
-    if ! $muted; then
-        echo -e "[$CURRTIME] $SCRIPT_NAME> $1"
-    fi
-}
-
 log "=== STARTING - ARGUMENTS: $* ===" muted
 
 # === RUNTIME ===
