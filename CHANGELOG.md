@@ -1,3 +1,18 @@
+# [0.8.0](https://github.com/phonevox/pbackup/compare/v0.7.3...v0.8.0) (2025-03-19)
+
+
+### Bug Fixes
+
+* exitcode handling ([0ef9a22](https://github.com/phonevox/pbackup/commit/0ef9a2232361d65112ad58b38eecce099e2652eb))
+
+
+### Features
+
+* complete refactor of uzful lib, with modularization ([f1c47b0](https://github.com/phonevox/pbackup/commit/f1c47b09b0ee2596cda1cfa05e3812274de0ed08))
+* VV flag, simplified logs, progress bar for user ([ff0f7d1](https://github.com/phonevox/pbackup/commit/ff0f7d1e529fd47bbf544e52a4444fb2e36f54e8))
+
+
+
 ## [0.7.3](https://github.com/phonevox/pbackup/compare/v0.7.2...v0.7.3) (2025-03-11)
 
 
@@ -38,15 +53,6 @@
 
 * flag for delete, failsafe on delete, nofailsafe flag ([c2c41ad](https://github.com/phonevox/pbackup/commit/c2c41ad83cd1bddf6b4c2942680bd4e81c47b92c))
 * new issabel backup script, with rotate file ([3be7d4e](https://github.com/phonevox/pbackup/commit/3be7d4ef05772316d357598d48b30693a745ba88))
-
-
-
-## [0.6.6](https://github.com/phonevox/pbackup/compare/v0.6.5...v0.6.6) (2025-02-25)
-
-
-### Bug Fixes
-
-* (temporary) better rclone output ([0ed21f8](https://github.com/phonevox/pbackup/commit/0ed21f8eb3cca56e0b910d817adfcac6cb389d6a))
 
 
 
