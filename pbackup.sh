@@ -245,6 +245,7 @@ function rclone_copy() {
                 # rclone output itself
                 log.debug "(rclone) $line"
             else
+                log.trace "(rclone) $line"
                 # user-simplified progress bar
                 if [ $((line_count % 10)) -eq 0 ]; then
                     animation_step=$(((animation_step + 1) % $animation_frame_amount))
