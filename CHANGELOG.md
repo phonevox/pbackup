@@ -1,3 +1,13 @@
+## [0.8.3](https://github.com/phonevox/pbackup/compare/v0.8.2...v0.8.3) (2025-03-20)
+
+
+### Bug Fixes
+
+* remove old log method ([7b78df0](https://github.com/phonevox/pbackup/commit/7b78df095d2cdc7106923fd4b16c563684422623))
+* update old log method on old scripts ([30bc4c1](https://github.com/phonevox/pbackup/commit/30bc4c12a98b12094806849f3f6bd84e11e0b0ae))
+
+
+
 ## [0.8.2](https://github.com/phonevox/pbackup/compare/v0.8.1...v0.8.2) (2025-03-19)
 
 
@@ -37,15 +47,6 @@
 ### Bug Fixes
 
 * reattempt on fail ([085d9cb](https://github.com/phonevox/pbackup/commit/085d9cb5d7946e2a7e332468d97192a6bcbd5a8d))
-
-
-
-## [0.7.2](https://github.com/phonevox/pbackup/compare/v0.7.1...v0.7.2) (2025-03-05)
-
-
-### Bug Fixes
-
-* wrong flags in description/usage ([a1b495d](https://github.com/phonevox/pbackup/commit/a1b495d4b2b2c2b700692d5734380440815494c1))
 
 
 
