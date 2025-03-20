@@ -17,7 +17,7 @@ FILES=""
 
 # === FUNCS ===
 
-log "=== STARTING - ARGUMENTS: $* ===" muted
+log.info "=== STARTING - ARGUMENTS: $* ===" muted
 
 # === RUNTIME ===
 
@@ -25,24 +25,24 @@ function validations () {
     FULL_REMOTE_DEST="$1"
 
     # if not first argument, quit 
-    log "Checking for required arguments..."
+    log.trace "Checking for required arguments..."
     if  [ -z $FULL_REMOTE_DEST ]; then
-        log "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
+        log.fatal "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
         exit 1
     fi
 
     # test if usr/sbin/pbackup exists
-    log "Checking if pbackup is installed..."
+    log.trace "Checking if pbackup is installed..."
     if ! [ -f "/usr/sbin/pbackup" ]; then
-        log "ERROR: You need to install pbackup! Exiting..."
+        log.fatal "ERROR: You need to install pbackup! Exiting..."
         exit 1
     fi
 
     # check if remote exists
-    log "Checking if remote exists..."
+    log.trace "Checking if remote exists..."
     REMOTE_NAME="$(echo $FULL_REMOTE_DEST | cut -d ':' -f 1)"
     if ! pbackup --list | grep -q "^$REMOTE_NAME:"; then
-        log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
+        log.fatal "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
     fi
 }
@@ -59,39 +59,39 @@ function main () {
     # - Firstly, we need one backup file. Yesterday prefferably, but if it does not exist, make a new one.
     # If something goes wrong, stop.
     YESTERDAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$YESTERDAY.tgz
-    log "Looking for yesterday's backup file... ($YESTERDAY_BACKUP_FILE)"
+    log.debug "Looking for yesterday's backup file... ($YESTERDAY_BACKUP_FILE)"
     if ! [ -f $YESTERDAY_BACKUP_FILE ]; then
-        log "WARN: Could not locate yesterday's backup file! Trying to make today's backup..."
+        log.warn "WARN: Could not locate yesterday's backup file! Trying to make today's backup..."
         
         # make backup
         if ! [ -f /var/www/html/mbilling/cron.php ]; then
-            log "ERROR: Could not locate mbilling cron.php! Is this really a mbilling server? Exiting... (/var/www/html/mbilling/cron.php)"
+            log.fatal "ERROR: Could not locate mbilling cron.php! Is this really a mbilling server? Exiting... (/var/www/html/mbilling/cron.php)"
             exit 1
         fi
         php /var/www/html/mbilling/cron.php Backup
 
         TODAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$TODAY.tgz
         if ! [ -f $TODAY_BACKUP_FILE ]; then
-            log "ERROR: Failed to generate today's backup file! Exiting... ($TODAY_BACKUP_FILE)"
-            log "failed: $TODAY_BACKUP_FILE"
+            log.fatal "ERROR: Failed to generate today's backup file! Exiting... ($TODAY_BACKUP_FILE)"
+            log.fatal "failed: $TODAY_BACKUP_FILE"
             exit 1
         fi 
 
-        log "SUCCESS: Today's backup file generated! ($TODAY_BACKUP_FILE)"
+        log.debug "SUCCESS: Today's backup file generated! ($TODAY_BACKUP_FILE)"
         FILES_TO_UPLOAD+=($TODAY_BACKUP_FILE)
     else
-        log "Yesterday's backup file found! Using it..."
+        log.debug "Yesterday's backup file found! Using it..."
         FILES_TO_UPLOAD+=($YESTERDAY_BACKUP_FILE)
     fi
 
     # - Now, get extra files
     if $GET_RECORDINGS; then
-        log "Compacting recordings..."
+        log.info "Compacting recordings..."
         tar -czf /tmp/recordings.$TODAY.tgz /var/spool/asterisk/monitor
         FILES_TO_UPLOAD+=("/tmp/recordings.$TODAY.tgz")
     fi
     if $GET_SOUND_FILES; then
-        log "Compacting sound files..."
+        log.info "Compacting sound files..."
         tar -czf /tmp/soundfiles.$TODAY.tgz /usr/local/src/magnus/sounds
         FILES_TO_UPLOAD+=("/tmp/soundfiles.$TODAY.tgz")
     fi
@@ -108,16 +108,16 @@ function main () {
     # convert files to upload into pbackup format (File1,F2,F3,F4[...])
     read -a FILES <<< $(echo ${FILES_TO_UPLOAD[@]} | tr ' ' ',')
 
-    log "Uploading through pbackup..."
+    log.info "Uploading through pbackup..."
     pbackup --files "$FILES" --to "$FULL_REMOTE_DEST"
 
-    log "Cleaning up..."
+    log.debug "Cleaning up..."
     for FILE in ${FILES_TO_CLEAN[@]}; do
-        log "- Deleting $FILE"
+        log.trace "- Deleting $FILE"
         rm -f $FILE
     done
 
-    log "All done!"
+    log.info "All done!"
 
 }
 

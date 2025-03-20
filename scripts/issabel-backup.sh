@@ -29,7 +29,7 @@ FILES="$__BACKUP_FILE,$__RECORDINGS"
 
 # === FUNCS ===
 
-log "=== STARTING - ARGUMENTS: $*" muted
+log.info "=== STARTING - ARGUMENTS: $*" muted
 
 function generate_backup_file() {
 
@@ -37,24 +37,24 @@ function generate_backup_file() {
 
     # adding extra components if our custom bkp engine is installed
     if [ -f "/usr/share/issabel/privileged/pvx-backupengine-extras" ]; then
-        log "Custom backup engine detected, adding extra components to backup..."
+        log.debug "Custom backup engine detected, adding extra components to backup..."
         CUSTOM_BACKUPENGINE_COMPONENTS=",int_ixcsoft,int_sgp,int_receitanet,int_altarede" # start with comma!!!!!!
     else
-        log "Custom backup engine not detected, skipping extra components..."
+        log.debug "Custom backup engine not detected, skipping extra components..."
     fi
     COMPONENTS="$COMPONENTS$CUSTOM_BACKUPENGINE_COMPONENTS"
-    log "Components to backup: $COMPONENTS"
+    log.debug "Components to backup: $COMPONENTS"
 
-    log "Generating Issabel backup, this might take a while..."
+    log.info "Generating Issabel backup, this might take a while..."
     /usr/bin/issabel-helper backupengine --backup --backupfile "$BACKUP_FILE" --tmpdir "$BACKUP_DIR" --components $COMPONENTS 2>&1
 
     # checking if backup was generated
     if ! [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-        log "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not generated! Exiting for safety reasons..."
+        log.fatal "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not generated! Exiting for safety reasons..."
         exit 1
     fi
 
-    log "'$BACKUP_DIR/$BACKUP_FILE' generated, proceeding..."
+    log.debug "'$BACKUP_DIR/$BACKUP_FILE' generated, proceeding..."
 }
 
 # === RUNTIME ===
@@ -63,31 +63,31 @@ function validations () {
     FULL_REMOTE_DEST="$1"
 
     # if not first argument, quit 
-    log "Checking for required arguments..."
+    log.trace "Checking for required arguments..."
     if  [ -z "$FULL_REMOTE_DEST" ]; then
-        log "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
+        log.fatal "ERROR: Your first argument must be the rclone remote name and path if any. Example: \"mega:/backup\""
         exit 1
     fi
 
     # test if usr/sbin/pbackup exists
-    log "Checking if pbackup is installed..."
+    log.trace "Checking if pbackup is installed..."
     if ! [ -f "/usr/sbin/pbackup" ]; then
-        log "ERROR: You need to install pbackup! Exiting..."
+        log.fatal "ERROR: You need to install pbackup! Exiting..."
         exit 1
     fi
 
     # check if remote exists
-    log "Checking if remote exists..."
+    log.trace "Checking if remote exists..."
     REMOTE_NAME="$(echo $FULL_REMOTE_DEST | cut -d ':' -f 1)"
     if ! pbackup --list | grep -q "^$REMOTE_NAME:"; then
-        log "ERROR: Remote $REMOTE_NAME not found! Exiting..."
+        log.fatal "ERROR: Remote $REMOTE_NAME not found! Exiting..."
         exit 1
     fi
 
     # checking for issabelhelper, to generate the backups. if this is not present this may not be an issabel server
-    log "Checking for issabel-helper to handle backup generation..."
+    log.trace "Checking for issabel-helper to handle backup generation..."
     if ! [ -f "/usr/bin/issabel-helper" ]; then
-        log "ERROR: '/usr/bin/issabel-helper' not found. Is this really an IssabelPBX?"
+        log.fatal "ERROR: '/usr/bin/issabel-helper' not found. Is this really an IssabelPBX?"
         exit 1
     fi
 
@@ -98,18 +98,18 @@ function main () {
 
     generate_backup_file
 
-    log "Uploading through pbackup..."
+    log.info "Uploading through pbackup..."
     pbackup --files "$FILES" --to "$FULL_REMOTE_DEST"
 
-    log "Cleaning backupfile from local machine..."
+    log.debug "Cleaning backupfile from local machine..."
     if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
         rm -f "$BACKUP_DIR/$BACKUP_FILE"
-        log "- '$BACKUP_DIR/$BACKUP_FILE' deleted."
+        log.trace "- '$BACKUP_DIR/$BACKUP_FILE' deleted."
     else
-        log "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
+        log.error "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
     fi
 
-    log "All done!"
+    log.info "All done!"
 }
 
 main "$@"
