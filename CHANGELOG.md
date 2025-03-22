@@ -1,3 +1,12 @@
+## [0.8.4](https://github.com/phonevox/pbackup/compare/v0.8.3...v0.8.4) (2025-03-22)
+
+
+### Bug Fixes
+
+* wrong warning instead of warn ([8a7b6ca](https://github.com/phonevox/pbackup/commit/8a7b6ca5e85dc0dfa3a665acd7fcd454897068d6))
+
+
+
 ## [0.8.3](https://github.com/phonevox/pbackup/compare/v0.8.2...v0.8.3) (2025-03-20)
 
 
@@ -38,15 +47,6 @@
 
 * complete refactor of uzful lib, with modularization ([f1c47b0](https://github.com/phonevox/pbackup/commit/f1c47b09b0ee2596cda1cfa05e3812274de0ed08))
 * VV flag, simplified logs, progress bar for user ([ff0f7d1](https://github.com/phonevox/pbackup/commit/ff0f7d1e529fd47bbf544e52a4444fb2e36f54e8))
-
-
-
-## [0.7.3](https://github.com/phonevox/pbackup/compare/v0.7.2...v0.7.3) (2025-03-11)
-
-
-### Bug Fixes
-
-* reattempt on fail ([085d9cb](https://github.com/phonevox/pbackup/commit/085d9cb5d7946e2a7e332468d97192a6bcbd5a8d))
 
 
 
