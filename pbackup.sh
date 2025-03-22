@@ -411,7 +411,7 @@ function main() {
         if [ $rclone_exit_code -eq 0 ]; then
             log.info "Delete successful: $REMOTE"
         else
-            log.warning "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
+            log.warn "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
         fi
 
         exit $rclone_exit_code
@@ -492,9 +492,9 @@ function main() {
     fi
 
     if [ ! -z "$INVALID_PATHS" ]; then
-        log.warning "WARNING: The following paths do not exist and will be ignored:"
+        log.warn "WARNING: The following paths do not exist and will be ignored:"
         for path in "${INVALID_PATHS[@]}"; do
-            log.warning "- $(colorir "amarelo" "$(echo "$path" | cut -d ':' -f 1)")"
+            log.warn "- $(colorir "amarelo" "$(echo "$path" | cut -d ':' -f 1)")"
         done
     fi
 
