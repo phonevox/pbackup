@@ -1,3 +1,12 @@
+## [0.9.1](https://github.com/phonevox/pbackup/compare/v0.9.0...v0.9.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* issabel.sh now defaults to 1 day ago ([c4ce144](https://github.com/phonevox/pbackup/commit/c4ce144d5fc8b6ad6e74ad30e65286059384be5a))
+
+
+
 # [0.9.0](https://github.com/phonevox/pbackup/compare/v0.8.4...v0.9.0) (2025-03-24)
 
 
@@ -32,15 +41,6 @@
 ### Bug Fixes
 
 * script/issabel.sh using wrong logs ([48e94ba](https://github.com/phonevox/pbackup/commit/48e94baacb54072557de6ea47ef3aad7e65bf041))
-
-
-
-## [0.8.1](https://github.com/phonevox/pbackup/compare/v0.8.0...v0.8.1) (2025-03-19)
-
-
-### Bug Fixes
-
-* update from old to new logging method in scripts ([d3a51e1](https://github.com/phonevox/pbackup/commit/d3a51e13d85e1c4a822b869371545fa165a66776))
 
 
 
