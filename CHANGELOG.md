@@ -1,3 +1,12 @@
+# [0.9.0](https://github.com/phonevox/pbackup/compare/v0.8.4...v0.9.0) (2025-03-24)
+
+
+### Features
+
+* remove loading bar ([f2ea4c7](https://github.com/phonevox/pbackup/commit/f2ea4c7fc1b27d8ff400893026f44c7552aee4b8))
+
+
+
 ## [0.8.4](https://github.com/phonevox/pbackup/compare/v0.8.3...v0.8.4) (2025-03-22)
 
 
@@ -32,21 +41,6 @@
 ### Bug Fixes
 
 * update from old to new logging method in scripts ([d3a51e1](https://github.com/phonevox/pbackup/commit/d3a51e13d85e1c4a822b869371545fa165a66776))
-
-
-
-# [0.8.0](https://github.com/phonevox/pbackup/compare/v0.7.3...v0.8.0) (2025-03-19)
-
-
-### Bug Fixes
-
-* exitcode handling ([0ef9a22](https://github.com/phonevox/pbackup/commit/0ef9a2232361d65112ad58b38eecce099e2652eb))
-
-
-### Features
-
-* complete refactor of uzful lib, with modularization ([f1c47b0](https://github.com/phonevox/pbackup/commit/f1c47b09b0ee2596cda1cfa05e3812274de0ed08))
-* VV flag, simplified logs, progress bar for user ([ff0f7d1](https://github.com/phonevox/pbackup/commit/ff0f7d1e529fd47bbf544e52a4444fb2e36f54e8))
 
 
 
