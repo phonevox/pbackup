@@ -235,38 +235,10 @@ function rclone_copy() {
     while [ $attempt -le $MAX_RETRIES ]; do
         log.info "$(colorir "azul" "Attempt $attempt of $MAX_RETRIES: Copying $SOURCE -> $DESTINATION")"
 
-        local line_count=0
-        local animation_step=0
-        local animation_frame_amount=4
 
-        $RCLONE_CMD 2>&1 | while IFS= read -r line; do 
-            line_count=$((line_count+1))
-            if $_DEBUG; then
-                # rclone output itself
-                log.debug "(rclone) $line"
-            else
-                log.trace "(rclone) $line"
-                # user-simplified progress bar
-                if [ $((line_count % 10)) -eq 0 ]; then
-                    animation_step=$(((animation_step + 1) % $animation_frame_amount))
-                    local animation_frame=""
-                    case $animation_step in
-                        0) animation_frame="[|]" ;;
-                        1) animation_frame="[/]" ;;
-                        2) animation_frame="[―]" ;;
-                        3) animation_frame="[\]" ;;
-                    esac
-
-                    printf "\r%-30s" "$(colorir "azul" "$animation_frame Attempt $attempt in progress")"
-                fi
-            fi
-        done
-
-        [ $animation_step -gt 0 ] && echo "\n" # break a line if user animation happened
-        if ! $_DEBUG; then printf "\r"; fi
+        $RCLONE_CMD 2>&1 | while IFS= read -r line; do log "(rclone) $line"; done
         local RCLONE_EXITCODE=${PIPESTATUS[0]}
-
-        # log "$(colorir "magenta" "<!> Exit code: $RCLONE_EXITCODE <!>")"
+        log "$(colorir "magenta" "<!> Exit code: $RCLONE_EXITCODE <!>")"
 
         if [ $RCLONE_EXITCODE -eq 0 ]; then
             log.info "$(colorir "verde" "Upload successful: $SOURCE -> $DESTINATION (Attempt $attempt/$MAX_RETRIES) (Exit code: $RCLONE_EXITCODE)")"
