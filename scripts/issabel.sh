@@ -18,6 +18,7 @@ BACKUP_FILE="issabelbackup-$(date +%Y%m%d%H%M%S)-06.tar" # Não mude isso. É ne
 
 # other things
 ROTATE=false # this will be either false or a number
+DAYS_AGO=1
 declare -ga ROTATED_FILES
 ROTATED_FILES=()
 _REMOTE_FOLDER_CONFIGURATION="/configuration"
@@ -127,9 +128,9 @@ function rotate_recordings () {
     # its just a "scan line". if you keep changing your rotate a lot, this will lead to a weird pattern in your folder so i advise
     # you dont change your rotate a lot.
 
-    local YEAR=$(date -d "$ROTATE days ago" +%Y)
-    local MONTH=$(date -d "$ROTATE days ago" +%m)
-    local DAY=$(date -d "$ROTATE days ago" +%d)
+    local YEAR=$(date -d "$DAYS_AGO days ago" +%Y)
+    local MONTH=$(date -d "$DAYS_AGO days ago" +%m)
+    local DAY=$(date -d "$DAYS_AGO days ago" +%d)
     local HIT="$REMOTE/$YEAR/$MONTH/$DAY"
 
     log.trace "rotate_recordings: SCANLINE TARGET: remote_folder '$HIT' "
@@ -145,7 +146,7 @@ function rotate_configuration () {
     log.info "Rotating configuration..."
     local REMOTE="$FULL_REMOTE_DEST$_REMOTE_FOLDER_CONFIGURATION"
     local TARGET="issabelbackup"
-    local TARGET_DATE=$(date -d "$ROTATE days ago" +%Y-%m-%d)
+    local TARGET_DATE=$(date -d "$DAYS_AGO days ago" +%Y-%m-%d)
 
     log.trace "rotate_configuration: SCANLINE TARGET: date '$TARGET_DATE' | target '$TARGET' | remote '$REMOTE' "
     while read -r __SIZE __DATE __TIME __FILE; do
@@ -162,7 +163,8 @@ function main () {
     validations
 
     if hasFlag "r"; then
-        ROTATE="$(getFlag "r")"
+        ROTATE=true
+        DAYS_AGO="$(getFlag "r")"
     fi
 
     # ======== SHOULD SAVE RECORDINGS ========
