@@ -9,7 +9,7 @@ SCRIPT_NAME="$(basename "$FULL_SCRIPT_PATH")"
 
 # Logging
 _LOG_FILE="/var/log/pbackup.log"
-_LOG_LEVEL=3 # 0:test, 1:trace, 2:debug, 3:info, 4:warn, 5:error, 6:fatal
+_LOG_LEVEL=0 # 0:test, 1:trace, 2:debug, 3:info, 4:warn, 5:error, 6:fatal
 _LOG_ROTATE_PERIOD=7
 
 # Issabel Backup
@@ -173,6 +173,9 @@ function main () {
         RECORDINGS_REMOTE=":$_REMOTE_FOLDER_RECORDINGS/%YEAR-1d%/%MONTH-1d%" # where will we save them on the remote
         RECORDINGS_DESTINATION="$RECORDINGS_LOCAL$RECORDINGS_REMOTE"
         FILES+=("$RECORDINGS_DESTINATION")
+        log.trace "--- RECORDINGS ---"
+        log.trace "FILES: $FILES"
+        log.trace "RECORDINGS_LOCAL: $RECORDINGS_LOCAL"
     fi
 
     # ========= SHOULD SAVE CONFIGURATION ========

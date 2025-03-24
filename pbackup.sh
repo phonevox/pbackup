@@ -258,67 +258,44 @@ function rclone_copy() {
     return 1
 }
 
-
-
 function parse_date() {
     local INPUT="$1"
-    local CURRENT_DATE=$(date +"%Y-%m-%d %H-%M-%s")  # Mantemos um formato padrão AAAA-MM-DD
+    local DAYS_AGO="${_DAYS_AGO:-0}"  # Se _DAYS_AGO não estiver definido, usa 0 dias atrás
 
-    # Tratamento de %DAY%
-    if [[ "$INPUT" =~ %DAY% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%d)
-        INPUT=$(echo "$INPUT" | sed "s/%DAY%/$NEW_DATE/g")
-    fi
+    # Tratamento de substituições simples
+    declare -A DATE_FORMATS=(
+        ["%DAY%"]="%d"
+        ["%MONTH%"]="%m"
+        ["%YEAR%"]="%Y"
+        ["%HOUR%"]="%H"
+        ["%MINUTE%"]="%M"
+        ["%SECOND%"]="%S"
+    )
 
-    # Tratamento de %MONTH%
-    if [[ "$INPUT" =~ %MONTH% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%m)
-        INPUT=$(echo "$INPUT" | sed "s/%MONTH%/$NEW_DATE/g")
-    fi
-
-    # Tratamento de %YEAR%
-    if [[ "$INPUT" =~ %YEAR% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%Y)
-        INPUT=$(echo "$INPUT" | sed "s/%YEAR%/$NEW_DATE/g")
-    fi
-
-    # Tratamento de %HOUR%
-    if [[ "$INPUT" =~ %HOUR% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%H)
-        INPUT=$(echo "$INPUT" | sed "s/%HOUR%/$NEW_DATE/g")
-    fi
-
-    # Tratamento de %MINUTE%
-    if [[ "$INPUT" =~ %MINUTE% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%M)
-        INPUT=$(echo "$INPUT" | sed "s/%MINUTE%/$NEW_DATE/g")
-    fi
-
-    # Tratamento de %SECOND%
-    if [[ "$INPUT" =~ %SECOND% ]]; then
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$_DAYS_AGO days" +%S)
-        INPUT=$(echo "$INPUT" | sed "s/%SECOND%/$NEW_DATE/g")
-    fi
-
-    # Tratamento de %DAY-n%
-    while [[ "$INPUT" =~ %DAY-([0-9]+)d% ]]; do
-        local DAYS_TO_SUBTRACT="$((${BASH_REMATCH[1]} + $_DAYS_AGO))"
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$DAYS_TO_SUBTRACT days" +%d)
-        INPUT=$(echo "$INPUT" | sed "s/%DAY-${BASH_REMATCH[1]}d%/$NEW_DATE/g")
+    for KEY in "${!DATE_FORMATS[@]}"; do
+        if [[ "$INPUT" =~ $KEY ]]; then
+            local NEW_DATE=$(date -d "-${DAYS_AGO} days" +"${DATE_FORMATS[$KEY]}")
+            INPUT=${INPUT//$KEY/$NEW_DATE}
+        fi
     done
 
-    # Tratamento de %MONTH-n% (subtrai dias, não meses!)
-    while [[ "$INPUT" =~ %MONTH-([0-9]+)d% ]]; do
-        local DAYS_TO_SUBTRACT="$((${BASH_REMATCH[1]} + $_DAYS_AGO))"
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$DAYS_TO_SUBTRACT days" +%m)
-        INPUT=$(echo "$INPUT" | sed "s/%MONTH-${BASH_REMATCH[1]}d%/$NEW_DATE/g")
-    done
+    # Tratamento de %DAY-n%, %MONTH-n%, %YEAR-n%
+    while [[ "$INPUT" =~ %([A-Z]+)-([0-9]+)d% ]]; do
+        local TYPE="${BASH_REMATCH[1]}"  # DAY, MONTH ou YEAR
+        local N_DAYS="${BASH_REMATCH[2]}"  # Quantidade de dias a subtrair
 
-    # Tratamento de %YEAR-n% (subtrai dias, não anos!)
-    while [[ "$INPUT" =~ %YEAR-([0-9]+)d% ]]; do
-        local DAYS_TO_SUBTRACT="$((${BASH_REMATCH[1]} + $_DAYS_AGO))"
-        local NEW_DATE=$(date -d "$CURRENT_DATE -$DAYS_TO_SUBTRACT days" +%Y)
-        INPUT=$(echo "$INPUT" | sed "s/%YEAR-${BASH_REMATCH[1]}d%/$NEW_DATE/g")
+        local TOTAL_DAYS=$((N_DAYS + DAYS_AGO))
+        local FORMAT=""
+
+        case "$TYPE" in
+            DAY)   FORMAT="%d" ;;
+            MONTH) FORMAT="%m" ;;  # Subtrai dias, não meses
+            YEAR)  FORMAT="%Y" ;;  # Subtrai dias, não anos
+            *) continue ;;
+        esac
+
+        local NEW_DATE=$(date -d "-${TOTAL_DAYS} days" +"$FORMAT")
+        INPUT=${INPUT//%$TYPE-${N_DAYS}d%/$NEW_DATE}
     done
 
     echo "$INPUT"
