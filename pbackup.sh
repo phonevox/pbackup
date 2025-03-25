@@ -255,6 +255,7 @@ function rclone_copy() {
     done
 
     log.error "$(colorir "vermelho" "ERROR: All $MAX_RETRIES failed for: $SOURCE -> $DESTINATION")"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") - ERROR : All $MAX_RETRIES failed for: $SOURCE -> $DESTINATION" >> $CURRDIR/error.log
     return 1
 }
 
