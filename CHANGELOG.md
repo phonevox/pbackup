@@ -1,3 +1,13 @@
+## [0.9.3](https://github.com/phonevox/pbackup/compare/v0.9.2...v0.9.3) (2025-06-08)
+
+
+### Bug Fixes
+
+* delete flag skip recycle bin ([a3b9d9d](https://github.com/phonevox/pbackup/commit/a3b9d9d6783eac871b26448fe71c71b8f00e9f81))
+* force error.log ([ee80056](https://github.com/phonevox/pbackup/commit/ee80056f3abb751ae2b031bf1849164748efd9b4))
+
+
+
 ## [0.9.2](https://github.com/phonevox/pbackup/compare/v0.9.1...v0.9.2) (2025-03-24)
 
 
@@ -31,16 +41,6 @@
 ### Bug Fixes
 
 * wrong warning instead of warn ([8a7b6ca](https://github.com/phonevox/pbackup/commit/8a7b6ca5e85dc0dfa3a665acd7fcd454897068d6))
-
-
-
-## [0.8.3](https://github.com/phonevox/pbackup/compare/v0.8.2...v0.8.3) (2025-03-20)
-
-
-### Bug Fixes
-
-* remove old log method ([7b78df0](https://github.com/phonevox/pbackup/commit/7b78df095d2cdc7106923fd4b16c563684422623))
-* update old log method on old scripts ([30bc4c1](https://github.com/phonevox/pbackup/commit/30bc4c12a98b12094806849f3f6bd84e11e0b0ae))
 
 
 
