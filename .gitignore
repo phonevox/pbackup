@@ -2,3 +2,4 @@
 CHANGELOG.md
 .vscode
 dev
+pbackup.log*

@@ -347,25 +347,73 @@ function main() {
             exit 1
         fi
 
-        # Executa o rclone delete e captura a saída
-        echo "test: rclone delete \"$REMOTE\" --rmdirs"
-        output=$(rclone delete "$REMOTE" --rmdirs 2>&1)
+        # Função para detectar o tipo do remote e retornar a flag correta para pular a lixeira
+        get_skip_trash_flag() {
+            local remote_path="$1"
+            local remote_name="${remote_path%%:*}"
+            local remote_type
+
+            log.trace "remote_path: $remote_path" silent
+            log.trace "remote_name: $remote_name" silent
+
+            remote_type=$(rclone listremotes --json | tr -d '\n' | sed -n "s/.*{\"name\":\"$remote_name\",\"type\":\"\([^\"]*\)\".*/\1/p")
+
+            if [[ -z "$remote_type" ]]; then
+                log.warn "Could not detect remote type for '$remote_name'. Skipping trash flag." silent
+                echo ""
+                return
+            fi
+
+            log.trace "remote_type: $remote_type" silent
+
+            case "$remote_type" in
+                drive) echo "--drive-use-trash=false" ;;
+                onedrive) echo "--onedrive-no-trashed=true" ;;
+                *) echo "" ;;
+            esac
+        }
+
+
+        SKIP_TRASH_FLAG="$(get_skip_trash_flag "$REMOTE")"
+
+        # Verifica se o caminho existe e determina se é diretório
+        if rclone lsjson "$REMOTE" >/dev/null 2>&1; then
+            if rclone lsjson "$REMOTE" 2>/dev/null | grep -q '"IsDir": true'; then
+                log.trace "Detected directory. Running: rclone delete \"$REMOTE\" --rmdirs $SKIP_TRASH_FLAG"
+                output=$(rclone delete "$REMOTE" --rmdirs $SKIP_TRASH_FLAG 2>&1)
+                rclone_cmd="rclone delete"
+            else
+                log.trace "Detected file. Running: rclone deletefile \"$REMOTE\" $SKIP_TRASH_FLAG"
+                output=$(rclone deletefile "$REMOTE" $SKIP_TRASH_FLAG 2>&1)
+                rclone_cmd="rclone deletefile"
+            fi
+        else
+            log.warn "$(colorir "vermelho" "Path not found or inaccessible: $REMOTE")"
+            exit 1
+        fi
+
         rclone_exit_code=$?
 
-        # Loga a saída do rclone
+        log.trace "--- Begin output of $rclone_cmd ---"
         while IFS= read -r line; do
             log.trace "(rclone) $line"
         done <<< "$output"
+        log.trace "--- End output of $rclone_cmd ---"
 
-        # Verifica se o rclone foi bem-sucedido
-        if [ $rclone_exit_code -eq 0 ]; then
-            log.info "Delete successful: $REMOTE"
+        # Mesmo se deu erro, verifica se o arquivo realmente sumiu
+        if ! rclone ls "$REMOTE" >/dev/null 2>&1; then
+            if [ $rclone_exit_code -eq 0 ]; then
+                log.info "Delete successful: $REMOTE"
+            else
+                log.warn "$(colorir "amarelo" "Warning: Rclone reported error, but path was removed: $REMOTE")"
+            fi
+            exit 0
         else
             log.warn "$(colorir "vermelho" "Failed to delete: $REMOTE!")"
+            exit $rclone_exit_code
         fi
-
-        exit $rclone_exit_code
     fi
+
 
     if hasFlag "purge"; then
         REMOTE="$(getFlag "purge")"
