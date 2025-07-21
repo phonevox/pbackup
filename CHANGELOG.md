@@ -1,3 +1,17 @@
+# [1.0.0](https://github.com/phonevox/pbackup/compare/v0.9.3...v1.0.0) (2025-07-21)
+
+
+### Features
+
+* **rotate:** remove clientside file rotation ([e52dd97](https://github.com/phonevox/pbackup/commit/e52dd976a48ca4e3368830e0f250a50d31065f00))
+
+
+### BREAKING CHANGES
+
+* **rotate:** completely remove clientside file rotation
+
+
+
 ## [0.9.3](https://github.com/phonevox/pbackup/compare/v0.9.2...v0.9.3) (2025-06-08)
 
 
@@ -32,15 +46,6 @@
 ### Features
 
 * remove loading bar ([f2ea4c7](https://github.com/phonevox/pbackup/commit/f2ea4c7fc1b27d8ff400893026f44c7552aee4b8))
-
-
-
-## [0.8.4](https://github.com/phonevox/pbackup/compare/v0.8.3...v0.8.4) (2025-03-22)
-
-
-### Bug Fixes
-
-* wrong warning instead of warn ([8a7b6ca](https://github.com/phonevox/pbackup/commit/8a7b6ca5e85dc0dfa3a665acd7fcd454897068d6))
 
 
 
