@@ -17,10 +17,6 @@ BACKUP_DIR="/var/www/backup" # Padrão
 BACKUP_FILE="issabelbackup-$(date +%Y%m%d%H%M%S)-06.tar" # Não mude isso. É necessário pra poder upar o backup depois.
 
 # other things
-ROTATE=false # this will be either false or a number
-DAYS_AGO=1
-declare -ga ROTATED_FILES
-ROTATED_FILES=()
 _REMOTE_FOLDER_CONFIGURATION="/configuration"
 _REMOTE_FOLDER_RECORDINGS="/recordings"
 
@@ -31,7 +27,6 @@ source "$(dirname "$CURRDIR")/lib/ezflags.sh"
 source "$(dirname "$CURRDIR")/lib/uzful.sh"
 
 add_flag "d" "dry" "Do NOT make changes to the system" bool
-add_flag "r" "rotate" "How many days should we keep in remote before removing older ones" int
 add_flag "t" "remote" "Remote destination to upload to" string
 add_flag "rec:HIDDEN" "recordings" "Backup recordings" bool
 add_flag "config:HIDDEN" "configuration" "Backup configuration" bool
@@ -105,67 +100,8 @@ function validations () {
     fi
 }
 
-function execute_rotate () {
-    log.trace "Rotating via scanline/pinpoint for $ROTATE days..."
-    hasFlag "rec" && rotate_recordings
-    hasFlag "config" && rotate_configuration
-    log.trace "The rotated files are: $(echo ${ROTATED_FILES[@]})"
-
-    for ROTATED_FILE in "${ROTATED_FILES[@]}"; do
-        log.trace "Removing $ROTATED_FILE"
-        pbackup --delete "$ROTATED_FILE"
-
-        # TODO(adrian): purge empty folders. only really needed for recordings
-    done
-}
-
-function rotate_recordings () {
-    log.info "Rotating recordings..."
-    local REMOTE="$FULL_REMOTE_DEST$_REMOTE_FOLDER_RECORDINGS"
-
-    # i dont know why you would rotate recordings, but okay, ill make it somewhat compatible
-    # think of this as "scan lines", it will just search the folder X days ago and delete. it wont really check everything older than that.
-    # its just a "scan line". if you keep changing your rotate a lot, this will lead to a weird pattern in your folder so i advise
-    # you dont change your rotate a lot.
-
-    local YEAR=$(date -d "$DAYS_AGO days ago" +%Y)
-    local MONTH=$(date -d "$DAYS_AGO days ago" +%m)
-    local DAY=$(date -d "$DAYS_AGO days ago" +%d)
-    local HIT="$REMOTE/$YEAR/$MONTH/$DAY"
-
-    log.trace "rotate_recordings: SCANLINE TARGET: remote_folder '$HIT' "
-    if rclone lsf "$HIT" > /dev/null; then # if the command fails, the folder does not exist
-        log.trace "rotate_recordings: scanline hit: $HIT"
-        ROTATED_FILES+=("$HIT")
-    else
-        log.trace "rotate_recordings: scanline miss: $HIT"
-    fi
-}
-
-function rotate_configuration () {
-    log.info "Rotating configuration..."
-    local REMOTE="$FULL_REMOTE_DEST$_REMOTE_FOLDER_CONFIGURATION"
-    local TARGET="issabelbackup"
-    local TARGET_DATE=$(date -d "$DAYS_AGO days ago" +%Y-%m-%d)
-
-    log.trace "rotate_configuration: SCANLINE TARGET: date '$TARGET_DATE' | target '$TARGET' | remote '$REMOTE' "
-    while read -r __SIZE __DATE __TIME __FILE; do
-        if [[ "$__DATE" == "$TARGET_DATE" ]] && [[ "$__FILE" == *"$TARGET"* ]]; then
-            log.trace "rotate_configuration: scanline hit: $__SIZE $__DATE $__TIME $__FILE"
-            ROTATED_FILES+=("$REMOTE/$__FILE")
-        else
-            log.trace "rotate_configuration: scanline miss: $__SIZE $__DATE $__TIME $__FILE"
-        fi
-    done < <(rclone lsl "$REMOTE")
-}
-
 function main () {
     validations
-
-    if hasFlag "r"; then
-        ROTATE=true
-        DAYS_AGO="$(getFlag "r")"
-    fi
 
     # ======== SHOULD SAVE RECORDINGS ========
     if hasFlag "rec"; then
@@ -200,9 +136,6 @@ function main () {
     else
         log.error "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
     fi
-
-    # ======== ROTATE ========
-    [[ "$ROTATE" != "false" ]] && execute_rotate
 
     log.info "All done!"
     exit 0
