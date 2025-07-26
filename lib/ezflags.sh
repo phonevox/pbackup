@@ -12,7 +12,7 @@
 # : : to reference it on your script, you still need to use the short without suffix, i.e hasFlag "d"
 # : : Existing suffixes: 
 # : : : ":HIDDEN" hide from help. wont work if you dont pass in a long flag too
-# : : : ":BLOCK" block the flag from being used (if called, will throw error) (THIS IS NOT IMPLEMENTED YET!!!!)
+# : : : ":BLOCK" hide and block the flag from being used (if called, will throw error) (THIS IS NOT IMPLEMENTED YET!!!!)
 # : long is the double-dashed (--), multi character part of the flag
 # : description is the flag's description, what it does
 # : type is the flag's type, what it is. it is optional (defaults boolean) and can be one of:
