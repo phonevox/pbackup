@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/phonevox/pbackup/compare/v1.0.0...v1.1.0) (2025-07-26)
+
+
+### Features
+
+* non-rclone destinations (via curl) on issabel script ([6fb66ab](https://github.com/phonevox/pbackup/commit/6fb66abba734336150c7cdf1da94524884df8a1e))
+
+
+
 # [1.0.0](https://github.com/phonevox/pbackup/compare/v0.9.3...v1.0.0) (2025-07-21)
 
 
@@ -37,15 +46,6 @@
 ### Bug Fixes
 
 * issabel.sh now defaults to 1 day ago ([c4ce144](https://github.com/phonevox/pbackup/commit/c4ce144d5fc8b6ad6e74ad30e65286059384be5a))
-
-
-
-# [0.9.0](https://github.com/phonevox/pbackup/compare/v0.8.4...v0.9.0) (2025-03-24)
-
-
-### Features
-
-* remove loading bar ([f2ea4c7](https://github.com/phonevox/pbackup/commit/f2ea4c7fc1b27d8ff400893026f44c7552aee4b8))
 
 
 
