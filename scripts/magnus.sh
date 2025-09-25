@@ -12,13 +12,10 @@ _LOG_FILE="/var/log/pbackup.log"
 _LOG_LEVEL=0 # 0:test, 1:trace, 2:debug, 3:info, 4:warn, 5:error, 6:fatal
 _LOG_ROTATE_PERIOD=7
 
-# Issabel Backup
-BACKUP_DIR="/var/www/backup" # Padrão
-BACKUP_FILE="issabelbackup-$(date +%Y%m%d%H%M%S)-06.tar" # Não mude isso. É necessário pra poder upar o backup depois.
+# Magnus Backup
+FILES=""
 
 # other things
-_REMOTE_FOLDER_CONFIGURATION="/configuration"
-_REMOTE_FOLDER_RECORDINGS="/recordings"
 UPLOAD_ONLY_MODE="false"
 
 # === FLAG GENERATION ===
@@ -29,13 +26,13 @@ source "$(dirname "$CURRDIR")/lib/uzful.sh"
 
 add_flag "d" "dry" "Do NOT make changes to the system" bool
 add_flag "t" "remote" "Remote destination to upload to" string
-add_flag "rec:HIDDEN" "recordings" "Backup recordings" bool
-add_flag "config:HIDDEN" "configuration" "Backup configuration" bool
 add_flag "s:HIDDEN" "token" "If you're using a remote thats not in rclone and it needs a JWT token, provide it here\nThis was created mainly for Phonevox's Upload-Only-API (UOA)" string
+
+
 add_flag "test:HIDDEN" "test" "[!] test mode, ignore app exit attempts" bool
 
-set_description "IssabelPBX Backup script for pbackup\nExample usage: sudo bash $FULL_SCRIPT_PATH --recordings --configuration -t mega-bkp:/issabel-pbackup"
-set_usage "sudo bash $FULL_SCRIPT_PATH [--recordings] [--configuration] -t <remote> "
+set_description "MagnusBilling Backup script for pbackup\nExample usage: sudo bash $FULL_SCRIPT_PATH -t mega-bkp:/issabel-pbackup (remote example)\n or sudo bash $FULL_SCRIPT_PATH -t http://uoe.server.url/v1/upload:/ --token eyJhb...xx (uoe example)"
+set_usage "sudo bash $FULL_SCRIPT_PATH -t <remote> "
 parse_flags $@
 
 # === FUNCS ===
@@ -105,31 +102,6 @@ function cexit() {
     fi
 }
 
-function generate_backup_file() {
-
-    local COMPONENTS="as_db,as_config_files,as_sounds,as_mohmp3,as_dahdi,fx_db,fx_pdf,ep_db,ep_config_files,callcenter_db,asternic_db,FOP2_settings_db,sugar_db,vtiger_db,a2billing_db,mysql_db,menus_permissions,calendar_db,address_db,conference_db,eop_db"
-
-    # adding extra components if our custom bkp engine is installed
-    if [ -f "/usr/share/issabel/privileged/pvx-backupengine-extras" ]; then
-        log.debug "Custom backup engine detected, adding extra components to backup..."
-        CUSTOM_BACKUPENGINE_COMPONENTS=",int_ixcsoft,int_sgp,int_receitanet,int_altarede" # start with comma!!!!!!
-    else
-        log.debug "Custom backup engine not detected, skipping extra components..."
-    fi
-    COMPONENTS="$COMPONENTS$CUSTOM_BACKUPENGINE_COMPONENTS"
-    log.trace "Components to backup: $COMPONENTS"
-
-    log.info "Generating Issabel backup, this might take a while..."
-    /usr/bin/issabel-helper backupengine --backup --backupfile "$BACKUP_FILE" --tmpdir "$BACKUP_DIR" --components $COMPONENTS 2>&1
-
-    # checking if backup was generated
-    if ! [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-        log.fatal "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not generated! Exiting for safety reasons..."
-        cexit 1
-    fi
-
-    log.info "'$BACKUP_DIR/$BACKUP_FILE' generated, proceeding..."
-}
 
 function upload_via_curl() {
     local FILES_CSV="$1"
@@ -242,57 +214,75 @@ function validations () {
 
     fi
 
-    # checking for issabelhelper, to generate the backups. if this is not present this may not be an issabel server
-    log.trace "Checking for issabel-helper to handle backup generation..."
-    if ! [ -f "/usr/bin/issabel-helper" ]; then
-        log.fatal "ERROR: '/usr/bin/issabel-helper' not found. Is this really an IssabelPBX?"
-        cexit 1
-    fi
 }
 
 function main () {
     validations
 
-    TMP_DIR=$(mktemp -d)
-    log.debug "Temporary directory created at $TMP_DIR"
+    # TMP_DIR=$(mktemp -d)
+    # log.debug "Temporary directory created at $TMP_DIR"
 
-    # ======== SHOULD SAVE RECORDINGS ========
-    if hasFlag "rec"; then
-        RECORDINGS_LOCAL=$(parse_date "/var/spool/asterisk/monitor/%YEAR-1d%/%MONTH-1d%/%DAY-1d%")
-        RECORDINGS_REMOTE=$(parse_date ":$_REMOTE_FOLDER_RECORDINGS/%YEAR-1d%/%MONTH-1d%")
+    FILES_TO_UPLOAD=()
+    GET_RECORDINGS="true"
+    GET_SOUND_FILES="true"
+    TODAY=$(date '+%d-%m-%Y')
+    YESTERDAY=$(date -d "yesterday" '+%d-%m-%Y')
 
-        # Extrai ano/mes/dia do path
-        YEAR=$(basename "$(dirname "$(dirname "$RECORDINGS_LOCAL")")")
-        MONTH=$(basename "$(dirname "$RECORDINGS_LOCAL")")
-        DAY=$(basename "$RECORDINGS_LOCAL")
-
-        ARCHIVE_FILE="$TMP_DIR/$DAY.tar.gz"
-
-        if [ -d "$RECORDINGS_LOCAL" ]; then
-            log.debug "Compressing recordings from $RECORDINGS_LOCAL ..."
-            tar -czf "$ARCHIVE_FILE" -C "$(dirname "$RECORDINGS_LOCAL")" "$(basename "$RECORDINGS_LOCAL")"
-        else
-            log.warn "No recordings directory found at $RECORDINGS_LOCAL"
+    # - Firstly, we need one backup file. Yesterday prefferably, but if it does not exist, make a new one.
+    # If something goes wrong, stop.
+    YESTERDAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$YESTERDAY.tgz
+    log.debug "Looking for yesterday's backup file... ($YESTERDAY_BACKUP_FILE)"
+    if ! [ -f $YESTERDAY_BACKUP_FILE ]; then
+        log.warn "WARN: Could not locate yesterday's backup file! Trying to make today's backup..."
+        
+        # make backup
+        if ! [ -f /var/www/html/mbilling/cron.php ]; then
+            log.fatal "ERROR: Could not locate mbilling cron.php! Is this really a mbilling server? Exiting... (/var/www/html/mbilling/cron.php)"
+            exit 1
         fi
+        php /var/www/html/mbilling/cron.php Backup
 
-        RECORDINGS_DESTINATION="$ARCHIVE_FILE$RECORDINGS_REMOTE"
-        FILES+=("$RECORDINGS_DESTINATION")
+        TODAY_BACKUP_FILE=/usr/local/src/magnus/backup/backup_voip_softswitch.$TODAY.tgz
+        if ! [ -f $TODAY_BACKUP_FILE ]; then
+            log.fatal "ERROR: Failed to generate today's backup file! Exiting... ($TODAY_BACKUP_FILE)"
+            log.fatal "failed: $TODAY_BACKUP_FILE"
+            exit 1
+        fi 
 
-        log.trace "--- RECORDINGS ---"
-        log.trace "FILES: $FILES"
-        log.trace "RECORDINGS_LOCAL: $RECORDINGS_LOCAL"
-        log.trace "ARCHIVE_FILE: $ARCHIVE_FILE"
+        log.debug "SUCCESS: Today's backup file generated! ($TODAY_BACKUP_FILE)"
+        FILES_TO_UPLOAD+=($TODAY_BACKUP_FILE:/configuration/backup_voip_softswitch.$TODAY.tgz)
+    else
+        log.debug "Yesterday's backup file found! Using it..."
+        FILES_TO_UPLOAD+=($YESTERDAY_BACKUP_FILE:/configuration/backup_voip_softswitch.$YESTERDAY.tgz)
     fi
 
-
-    # ========= SHOULD SAVE CONFIGURATION ========
-    if hasFlag "config"; then
-        CONFIGURATION_LOCAL="$BACKUP_DIR/$BACKUP_FILE" # where is the file right now
-        CONFIGURATION_REMOTE=":$_REMOTE_FOLDER_CONFIGURATION" # where will we save them on the remote
-        CONFIGURATION_DESTINATION="$CONFIGURATION_LOCAL$CONFIGURATION_REMOTE"
-        FILES+=("$CONFIGURATION_DESTINATION")
-        generate_backup_file
+    # - Now, get extra files
+    if $GET_RECORDINGS; then
+        log.info "Compacting recordings..."
+        tar -czf /tmp/recordings.$TODAY.tgz /var/spool/asterisk/monitor
+        FILES_TO_UPLOAD+=("/tmp/recordings.$TODAY.tgz:/recordings/recordings.$TODAY.tgz")
     fi
+    if $GET_SOUND_FILES; then
+        log.info "Compacting sound files..."
+        tar -czf /tmp/soundfiles.$TODAY.tgz /usr/local/src/magnus/sounds
+        FILES_TO_UPLOAD+=("/tmp/soundfiles.$TODAY.tgz:/soundfiles/soundfiles.$TODAY.tgz")
+    fi
+
+    # add everything that is not the backup_voip_softswitch file to the clean list
+    # so we remember to delete it after uploading
+    FILES_TO_CLEAN=()
+    for FILE in ${FILES_TO_UPLOAD[@]}; do
+        if ! [[ "$FILE" == *"backup_voip_softswitch"* ]]; then
+
+            if [[ "$FILE" == *:* ]]; then
+                FILE="${FILE%%:*}" # remove remote part if exists
+            fi
+            FILES_TO_CLEAN+=("$FILE")
+        fi
+    done
+
+    # convert files to upload into pbackup format (File1,F2,F3,F4[...])
+    read -a FILES <<< $(echo ${FILES_TO_UPLOAD[@]} | tr ' ' ',')
 
     # ======== UPLOAD ========
     log.debug "Uploading files to remote..."
@@ -313,18 +303,10 @@ function main () {
 
     # ======== CLEAN UP ========
     log.debug "Cleaning up..."
-
-    if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-        rm -f "$BACKUP_DIR/$BACKUP_FILE"
-        log.trace "- '$BACKUP_DIR/$BACKUP_FILE' deleted."
-    else
-        log.error "Backup file '$BACKUP_DIR/$BACKUP_FILE' was not found. Skipping delete."
-    fi
-
-    if [ -d "$TMP_DIR" ]; then
-        rm -rf "$TMP_DIR"
-        log.trace "- Temporary directory '$TMP_DIR' deleted."
-    fi
+    for FILE in ${FILES_TO_CLEAN[@]}; do
+        log.trace "- Deleting $FILE"
+        rm -f $FILE
+    done
 
     log.info "All done!"
     cexit 0
