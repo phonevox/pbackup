@@ -42,6 +42,50 @@ parse_flags $@
 
 log.debug "=== STARTING - ARGUMENTS: $*" muted
 
+
+function parse_date() {
+    local INPUT="$1"
+    local DAYS_AGO="${_DAYS_AGO:-0}"  # Se _DAYS_AGO não estiver definido, usa 0 dias atrás
+
+    # Tratamento de substituições simples
+    declare -A DATE_FORMATS=(
+        ["%DAY%"]="%d"
+        ["%MONTH%"]="%m"
+        ["%YEAR%"]="%Y"
+        ["%HOUR%"]="%H"
+        ["%MINUTE%"]="%M"
+        ["%SECOND%"]="%S"
+    )
+
+    for KEY in "${!DATE_FORMATS[@]}"; do
+        if [[ "$INPUT" =~ $KEY ]]; then
+            local NEW_DATE=$(date -d "-${DAYS_AGO} days" +"${DATE_FORMATS[$KEY]}")
+            INPUT=${INPUT//$KEY/$NEW_DATE}
+        fi
+    done
+
+    # Tratamento de %DAY-n%, %MONTH-n%, %YEAR-n%
+    while [[ "$INPUT" =~ %([A-Z]+)-([0-9]+)d% ]]; do
+        local TYPE="${BASH_REMATCH[1]}"  # DAY, MONTH ou YEAR
+        local N_DAYS="${BASH_REMATCH[2]}"  # Quantidade de dias a subtrair
+
+        local TOTAL_DAYS=$((N_DAYS + DAYS_AGO))
+        local FORMAT=""
+
+        case "$TYPE" in
+            DAY)   FORMAT="%d" ;;
+            MONTH) FORMAT="%m" ;;  # Subtrai dias, não meses
+            YEAR)  FORMAT="%Y" ;;  # Subtrai dias, não anos
+            *) continue ;;
+        esac
+
+        local NEW_DATE=$(date -d "-${TOTAL_DAYS} days" +"$FORMAT")
+        INPUT=${INPUT//%$TYPE-${N_DAYS}d%/$NEW_DATE}
+    done
+
+    echo "$INPUT"
+}
+
 # custom exit para possibilitar continuar o script mesmo depois de um erro através da flag --test
 function cexit() {
     local EXIT_CODE="$1"
@@ -209,16 +253,37 @@ function validations () {
 function main () {
     validations
 
+    TMP_DIR=$(mktemp -d)
+    log.debug "Temporary directory created at $TMP_DIR"
+
     # ======== SHOULD SAVE RECORDINGS ========
     if hasFlag "rec"; then
-        RECORDINGS_LOCAL="/var/spool/asterisk/monitor/%YEAR-1d%/%MONTH-1d%/%DAY-1d%" # where is the file right now
-        RECORDINGS_REMOTE=":$_REMOTE_FOLDER_RECORDINGS/%YEAR-1d%/%MONTH-1d%" # where will we save them on the remote
-        RECORDINGS_DESTINATION="$RECORDINGS_LOCAL$RECORDINGS_REMOTE"
+        RECORDINGS_LOCAL=$(parse_date "/var/spool/asterisk/monitor/%YEAR-1d%/%MONTH-1d%/%DAY-1d%")
+        RECORDINGS_REMOTE=$(parse_date ":$_REMOTE_FOLDER_RECORDINGS/%YEAR-1d%/%MONTH-1d%")
+
+        # Extrai ano/mes/dia do path
+        YEAR=$(basename "$(dirname "$(dirname "$RECORDINGS_LOCAL")")")
+        MONTH=$(basename "$(dirname "$RECORDINGS_LOCAL")")
+        DAY=$(basename "$RECORDINGS_LOCAL")
+
+        ARCHIVE_FILE="$TMP_DIR/$DAY.tar.gz"
+
+        if [ -d "$RECORDINGS_LOCAL" ]; then
+            log.debug "Compressing recordings from $RECORDINGS_LOCAL ..."
+            tar -czf "$ARCHIVE_FILE" -C "$(dirname "$RECORDINGS_LOCAL")" "$(basename "$RECORDINGS_LOCAL")"
+        else
+            log.warn "No recordings directory found at $RECORDINGS_LOCAL"
+        fi
+
+        RECORDINGS_DESTINATION="$ARCHIVE_FILE$RECORDINGS_REMOTE"
         FILES+=("$RECORDINGS_DESTINATION")
+
         log.trace "--- RECORDINGS ---"
         log.trace "FILES: $FILES"
         log.trace "RECORDINGS_LOCAL: $RECORDINGS_LOCAL"
+        log.trace "ARCHIVE_FILE: $ARCHIVE_FILE"
     fi
+
 
     # ========= SHOULD SAVE CONFIGURATION ========
     if hasFlag "config"; then
@@ -247,12 +312,18 @@ function main () {
 
 
     # ======== CLEAN UP ========
-    log.debug "Cleaning backupfile from local machine..."
+    log.debug "Cleaning up..."
+
     if [ -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
         rm -f "$BACKUP_DIR/$BACKUP_FILE"
         log.trace "- '$BACKUP_DIR/$BACKUP_FILE' deleted."
     else
-        log.error "ERROR: '$BACKUP_DIR/$BACKUP_FILE' was not found. We aren't going to perform any delete operation in order to avoid deleting other files. Location checked: \"$BACKUP_DIR/$BACKUP_FILE\""
+        log.error "Backup file '$BACKUP_DIR/$BACKUP_FILE' was not found. Skipping delete."
+    fi
+
+    if [ -d "$TMP_DIR" ]; then
+        rm -rf "$TMP_DIR"
+        log.trace "- Temporary directory '$TMP_DIR' deleted."
     fi
 
     log.info "All done!"
