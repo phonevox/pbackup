@@ -1,3 +1,12 @@
+## [1.1.1](https://github.com/phonevox/pbackup/compare/v1.1.0...v1.1.1) (2025-09-25)
+
+
+### Bug Fixes
+
+* issabel.sh recording uploads preserve date ([386f62c](https://github.com/phonevox/pbackup/commit/386f62cdbac9fd9295158a80781dbbaec9107578))
+
+
+
 # [1.1.0](https://github.com/phonevox/pbackup/compare/v1.0.0...v1.1.0) (2025-07-26)
 
 
@@ -37,15 +46,6 @@
 ### Bug Fixes
 
 * parse_date incorrect ([049a6b5](https://github.com/phonevox/pbackup/commit/049a6b5f6ad9f17ea73e3e14189727a834de2891))
-
-
-
-## [0.9.1](https://github.com/phonevox/pbackup/compare/v0.9.0...v0.9.1) (2025-03-24)
-
-
-### Bug Fixes
-
-* issabel.sh now defaults to 1 day ago ([c4ce144](https://github.com/phonevox/pbackup/commit/c4ce144d5fc8b6ad6e74ad30e65286059384be5a))
 
 
 
