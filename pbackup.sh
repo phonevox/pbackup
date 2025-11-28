@@ -137,6 +137,10 @@ function rpm_is_installed() {
     fi
 }
 
+function to_bytes() {
+    numfmt --from=iec "$1"
+}
+
 # Integrated: check_disk_space
 function check_disk_space() {
     local DIR_PATH="$1"
@@ -534,8 +538,7 @@ function main() {
             log.fatal "ERROR: 'zip' is required for --split-size (-C) but not found in PATH. Please install it (e.g. apt install zip)"
             cexit 1
         fi
-        SPLIT_SIZE="$(getFlag "C")"
-        log.info "Split-size mode enabled: $SPLIT_SIZE"
+        log.info "Split-size mode enabled"
     fi
 
     if hasFlag "config"; then
@@ -818,34 +821,63 @@ function main() {
                 continue
             fi
 
-            SPLIT_SIZE="$(getFlag "C")"
-            if [ -n "$SPLIT_SIZE" ]; then
-                # Split mode for conf (adapted from command line)
+            SPLIT_SIZE_RAW="$(getFlag "C")"
+            if [ -n "$SPLIT_SIZE_RAW" ]; then
+                SPLIT_SIZE_BYTES=$(to_bytes "$SPLIT_SIZE_RAW")
+                # Split mode: aplica pra dirs OU arquivos
                 local item_to_split="$local_path"
-                local item_basename=$(basename "$local_path")
+                local original_basename=$(basename "$local_path")
+                local split_dir_name="${original_basename%.*}"
                 local temp_tar=""
+
                 if [ -d "$local_path" ]; then
-                    log.debug "Detected directory in conf: $local_path (will compact + split)"
+                    log.debug "Detected directory: $local_path (will compact + maybe split)"
                     if ! hasFlag "a"; then
-                        log.fatal "ERROR: Directory in conf without --autocompact."
+                        log.fatal "ERROR: Directory without --autocompact."
                         cexit 1
                     fi
-                    temp_tar="$TMP_DIR/${item_basename}.tar"
-                    if ! tar -cf "$temp_tar" -C "$(dirname "$local_path")" "$(basename "$local_path")"; then
-                        log.fatal "Failed to tar conf dir"; cexit 1;
+                    temp_tar="$TMP_DIR/${original_basename}.tar"
+                    if ! tar -cf "$temp_tar" -C "$(dirname "$local_path")" "$original_basename"; then
+                        log.fatal "Failed to tar dir"; cexit 1;
                     fi
                     item_to_split="$temp_tar"
-                    item_basename="${item_basename}.tar"
+                    split_dir_name="${original_basename}"
                 else
-                    log.debug "Detected file in conf: $local_path (will split)"
+                    log.debug "Detected file: $local_path (will maybe split)"
                 fi
 
-                local zip_base_name="${item_basename%.tar}.zip"
-                local zip_base="$TMP_DIR/${zip_base_name}"
+                local filesize
+                filesize=$(stat -c%s "$item_to_split")
+
+                if (( filesize < SPLIT_SIZE_BYTES )); then
+                    log.debug "File '$item_to_split' (${filesize} bytes) < split size (${SPLIT_SIZE_BYTES} bytes). Skipping split."
+
+                    # Usa a mesma lógica do modo "no split"
+                    PREPARED_FILES+=("$item_to_split:$remote_path")
+
+                    # Não esquecer de mover o tar compactado pra lista, não para o original
+                    if [ -n "$temp_tar" ]; then
+                        # Para diretórios compactados, renomeia o remoto com tar.gz
+                        local tar_remote_path
+                        if [[ "$remote_path" == */ ]]; then
+                            tar_remote_path="${remote_path%/}/$(basename "$local_path").tar"
+                        else
+                            tar_remote_path="${remote_path}.tar"
+                        fi
+                        PREPARED_FILES[-1]="$temp_tar:$tar_remote_path"
+                    fi
+
+                    continue
+                fi
+
+                # Split o item em ZIPs
+                local zip_base_name="${item_to_split##*/}"
+                zip_base_name="${zip_base_name%.tar}"
+                local zip_base="$TMP_DIR/${zip_base_name}.zip"
                 pushd "$(dirname "$item_to_split")" >/dev/null
-                if ! zip -r -s "$SPLIT_SIZE" "$zip_base" "$(basename "$item_to_split")" >&2; then
+                if ! zip -r -s "$SPLIT_SIZE_RAW" "$zip_base" "$(basename "$item_to_split")" >&2; then
                     popd >/dev/null
-                    log.fatal "ERROR: Failed to split conf item '$item_to_split'."
+                    log.fatal "ERROR: Failed to split '$item_to_split'."
                     cexit 1
                 fi
                 popd >/dev/null
