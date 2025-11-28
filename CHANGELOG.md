@@ -1,3 +1,12 @@
+## [1.3.1](https://github.com/phonevox/pbackup/compare/v1.3.0...v1.3.1) (2025-11-28)
+
+
+### Bug Fixes
+
+* split-size no split ([1c6ce5c](https://github.com/phonevox/pbackup/commit/1c6ce5cc858e65c6350a329b3d0e74b16ad77634))
+
+
+
 # [1.3.0](https://github.com/phonevox/pbackup/compare/v1.2.0...v1.3.0) (2025-11-28)
 
 
@@ -31,20 +40,6 @@
 ### Features
 
 * non-rclone destinations (via curl) on issabel script ([6fb66ab](https://github.com/phonevox/pbackup/commit/6fb66abba734336150c7cdf1da94524884df8a1e))
-
-
-
-# [1.0.0](https://github.com/phonevox/pbackup/compare/v0.9.3...v1.0.0) (2025-07-21)
-
-
-### Features
-
-* **rotate:** remove clientside file rotation ([e52dd97](https://github.com/phonevox/pbackup/commit/e52dd976a48ca4e3368830e0f250a50d31065f00))
-
-
-### BREAKING CHANGES
-
-* **rotate:** completely remove clientside file rotation
 
 
 
